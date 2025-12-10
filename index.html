@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文字轉 Threads 圖卡工具</title>
+    <!-- 引入 html2canvas 用於截圖 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 引入 marked 用於解析 Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@300;400;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
@@ -255,88 +259,134 @@
              opacity: 0.15;
         }
 
-        /* 花邊裝飾樣式 (使用偽元素實現，顏色繼承文字色) */
+        /* 花邊裝飾樣式 */
         .border-none::after { display: none; }
-
-        /* 1. 細線框 */
         .border-simple::after {
-            content: '';
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
-            border: 1px solid currentColor;
-            opacity: 0.5;
-            pointer-events: none;
-            z-index: 2;
+            content: ''; position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border: 1px solid currentColor; opacity: 0.5; pointer-events: none; z-index: 2;
         }
-
-        /* 2. 雙線框 */
         .border-double::after {
-            content: '';
-            position: absolute;
-            top: 12px; left: 12px; right: 12px; bottom: 12px;
-            border: 3px double currentColor;
-            opacity: 0.6;
-            pointer-events: none;
-            z-index: 2;
+            content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 3px double currentColor; opacity: 0.6; pointer-events: none; z-index: 2;
         }
-
-        /* 3. 四角裝飾 */
         .border-corners::after {
-            content: '';
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
+            content: ''; position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
             border: 1px solid currentColor;
-            /* 利用 clip-path 切出四個角 */
-            clip-path: polygon(
-                0 20px, 0 0, 20px 0, 
-                calc(100% - 20px) 0, 100% 0, 100% 20px,
-                100% calc(100% - 20px), 100% 100%, calc(100% - 20px) 100%,
-                20px 100%, 0 100%, 0 calc(100% - 20px)
-            );
-            /* 中間挖空，只留角 */
-            -webkit-mask: 
-                linear-gradient(#fff, #fff),
-                linear-gradient(#fff, #fff);
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-composite: destination-out;
-            mask-composite: exclude;
-            
-            /* 上面mask太複雜，用簡單的漸層遮罩模擬四角 */
-            mask-image: linear-gradient(to right, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px)),
-                        linear-gradient(to bottom, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px));
+            clip-path: polygon(0 20px, 0 0, 20px 0, calc(100% - 20px) 0, 100% 0, 100% 20px, 100% calc(100% - 20px), 100% 100%, calc(100% - 20px) 100%, 20px 100%, 0 100%, 0 calc(100% - 20px));
+            mask-image: linear-gradient(to right, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px)), linear-gradient(to bottom, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px));
             mask-composite: add;
-            
-            opacity: 0.6;
-            pointer-events: none;
-            z-index: 2;
+            opacity: 0.6; pointer-events: none; z-index: 2;
         }
-
-        /* 4. 古典花邊 (CSS 模擬) */
         .border-vintage::after {
-            content: '';
-            position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 1px solid currentColor;
-            outline: 1px solid currentColor;
-            outline-offset: -4px;
-            opacity: 0.4;
-            pointer-events: none;
-            z-index: 2;
+            content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid currentColor; outline: 1px solid currentColor; outline-offset: -4px;
+            opacity: 0.4; pointer-events: none; z-index: 2;
         }
         
-        /* 內文 */
-        .card-body {
+        /* 內文與 Markdown 樣式 */
+        .card-body, .render-body {
             flex: 1;
-            /* font-size 由 JS 動態決定 */
             color: inherit; 
-            /* white-space 改由 JS 的段落生成來控制 */
             overflow: hidden;
             letter-spacing: 0.05em;
             text-align: justify;
             z-index: 3; 
             position: relative;
-            /* 讓花邊不壓住文字 */
             padding: 10px; 
+            /* Markdown 預設樣式覆蓋 */
+            word-break: break-word;
+        }
+
+        /* 段落間距變數 */
+        .card-body p, .render-body p {
+            margin-top: 0;
+            margin-bottom: var(--para-spacing, 1em);
+            white-space: pre-wrap; /* 保留換行 */
+        }
+        
+        .card-body p:last-child, .render-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 標題樣式 */
+        .card-body h1, .render-body h1 { font-size: 1.4em; margin: 0.5em 0 0.3em; font-weight: 600; opacity: 0.9; }
+        .card-body h2, .render-body h2 { font-size: 1.25em; margin: 0.4em 0 0.25em; font-weight: 600; opacity: 0.85; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px;}
+        .card-body h3, .render-body h3 { font-size: 1.1em; margin: 0.3em 0 0.2em; font-weight: 600; opacity: 0.8; }
+        
+        /* 列表樣式 */
+        .card-body ul, .render-body ul, .card-body ol, .render-body ol {
+            margin: 0.2em 0 0.8em;
+            padding-left: 1.5em;
+        }
+        .card-body li, .render-body li {
+            margin-bottom: 0.3em;
+        }
+
+        /* 引用樣式 */
+        .card-body blockquote, .render-body blockquote {
+            margin: 0.5em 0;
+            padding-left: 1em;
+            border-left: 3px solid currentColor;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        /* 可愛透明表格樣式 */
+        .card-body table, .render-body table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0.8em 0;
+            background: rgba(125, 125, 125, 0.08); /* 微微的深色透明背景，適應深淺模式 */
+            border-radius: 8px; /* 圓角 */
+            overflow: hidden;
+            font-size: 0.9em; /* 字體縮小 */
+        }
+
+        /* 深色模式下的表格微調 */
+        .card-preview.dark-mode table, .render-card.dark-mode table {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .card-body th, .render-body th {
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            background: rgba(0,0,0,0.03);
+            opacity: 0.9;
+        }
+
+        .card-preview.dark-mode th, .render-card.dark-mode th {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .card-body td, .render-body td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            opacity: 0.85;
+        }
+        
+        .card-preview.dark-mode td, .render-card.dark-mode td {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card-body tr:last-child td, .render-body tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Code Block */
+        .card-body pre, .render-body pre {
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .card-preview.dark-mode pre, .render-card.dark-mode pre {
+            background: rgba(255,255,255,0.1);
         }
 
         .card-footer {
@@ -354,7 +404,6 @@
             position: relative;
             padding-left: 10px;
             padding-right: 10px;
-            /* 避免高度被壓縮 */
             flex-shrink: 0; 
         }
 
@@ -546,8 +595,8 @@
         </div>
 
         <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
-            <label>輸入內容</label>
-            <textarea id="inputText" placeholder="在這裡貼上文字..."></textarea>
+            <label>輸入內容 (支援 Markdown!)</label>
+            <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
         </div>
 
         <div class="controls">
@@ -569,7 +618,13 @@
     </div>
 
     <script>
-        // 日本傳統色數據 (補齊至 35 色)
+        // 設定 marked 選項
+        marked.setOptions({
+            breaks: true, // 允許換行
+            gfm: true     // 啟用 GitHub 風格 Markdown (支援表格)
+        });
+
+        // 日本傳統色數據
         const NIPPON_COLORS = [
             { name: "胡粉 (Gofun) - 潔白", hex: "#FFFFFB" },
             { name: "生成 (Kinari) - 棉麻", hex: "#FCD575" },
@@ -614,13 +669,12 @@
             "1:2": { w: 1080, h: 2160, previewH: 720 }  
         };
 
-        // 基礎字體大小 (Render / Preview)
         const BASE_FONT_SIZE_RENDER = 34;
         const BASE_FONT_SIZE_PREVIEW = 11.5;
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "（範例文字）\n\n那是一個安靜的午後，陽光灑落在圖書館的木質地板上。\n\n嶺初輕輕推了推眼鏡，看著正在翻書的夏姊姊。\n\n「有些故事，適合寫在紙上；有些故事，適合留在心裡。」\n\n夏姊姊，現在這個版本可以調整「段落間距」了。如果妳像這樣空了兩行，中間的距離就會根據妳的設定變大或變小。\n\n另外，因為字體大小變大時，文字可能會超出卡片範圍。\n\n所以我加了一個「溢出偵測」的功能。如果妳看到卡片出現紅框框和警告標示，那就表示內容滿出來了，這時候記得把「單頁字數」調小一點喔！\n\n這樣就不怕文字被吃掉了。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n試試看把「段落間距」拉大一點，Markdown 的列表和表格會更清楚喔。\n\n如果有比較複雜的表格，建議用 `===` 手動分頁，以免被切斷。";
             generatePreview();
         };
 
@@ -676,14 +730,18 @@
                 if (!content) return;
 
                 if (content.length > limit * 1.5) { 
-                    let paragraphs = content.split('\n');
+                    // 嘗試用雙換行（區塊）來切分，避免切斷 Markdown 結構
+                    let paragraphs = content.split(/\n\s*\n/);
                     let currentChunk = "";
+                    
                     paragraphs.forEach(para => {
-                        if ((currentChunk.length + para.length) > limit) {
+                        // 補回雙換行
+                        let p = para + "\n\n";
+                        if ((currentChunk.length + p.length) > limit) {
                             if(currentChunk) finalPages.push(currentChunk.trim());
-                            currentChunk = para + "\n";
+                            currentChunk = p;
                         } else {
-                            currentChunk += para + "\n";
+                            currentChunk += p;
                         }
                     });
                     if (currentChunk) finalPages.push(currentChunk.trim());
@@ -702,20 +760,6 @@
             let b = (rgb >>  0) & 0xff;  
             let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; 
             return luma < 100;
-        }
-
-        // 將純文字轉換為帶有樣式的 HTML，處理段落間距
-        function formatContent(text, paraSpacing) {
-            // 根據雙換行符切割段落 (模擬空一行)
-            // 如果只有單換行，視為同一段落內的換行
-            const paragraphs = text.split(/\n\s*\n/);
-            
-            return paragraphs.map((p, i) => {
-                // 最後一段不需要 margin-bottom
-                const mb = i === paragraphs.length - 1 ? 0 : paraSpacing;
-                // 使用 div 模擬段落，並保留內部換行 (pre-wrap)
-                return `<div style="margin-bottom: ${mb}em; white-space: pre-wrap;">${p}</div>`;
-            }).join('');
         }
 
         function generatePreview() {
@@ -755,14 +799,17 @@
                 card.style.backgroundColor = bgColor;
                 card.style.color = textColor;
                 
+                // 設定 CSS 變數供 Markdown 樣式使用
+                card.style.setProperty('--para-spacing', paraSpacing + 'em');
+                
                 let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                 
                 const fontSize = BASE_FONT_SIZE_PREVIEW * fontScale;
                 
-                // 使用新的 formatContent 函數
-                const formattedBody = formatContent(content, paraSpacing);
+                // 使用 marked 解析 Markdown
+                const parsedBody = marked.parse(content);
 
-                const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${formattedBody}</div>`;
+                const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${parsedBody}</div>`;
                 
                 const footerHtml = `
                     <div class="card-footer">
@@ -771,13 +818,11 @@
                     </div>
                 `;
 
-                // 警告標示
                 const warningBadge = `<div class="warning-badge">⚠️ 內容溢出，請減少字數</div>`;
 
                 card.innerHTML = warningBadge + textureHtml + bodyHtml + footerHtml;
                 previewPanel.appendChild(card);
                 
-                // 檢查溢出 (需要等待 DOM 渲染後)
                 setTimeout(() => {
                     const bodyEl = card.querySelector('.card-body');
                     if (bodyEl.scrollHeight > bodyEl.clientHeight) {
@@ -826,15 +871,20 @@
                     renderCard.style.backgroundColor = bgColor;
                     renderCard.style.color = textColor;
                     renderCard.style.fontFamily = fontStyle; 
+                    
+                    // 設定 CSS 變數
+                    renderCard.style.setProperty('--para-spacing', paraSpacing + 'em');
 
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                     
                     const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
-                    const formattedBody = formatContent(pages[i], paraSpacing);
+                    
+                    // 使用 marked 解析
+                    const parsedBody = marked.parse(pages[i]);
 
                     renderCard.innerHTML = `
                         ${textureHtml}
-                        <div class="render-body" style="line-height:${lineHeight}; font-size:${fontSize}px;">${formattedBody}</div>
+                        <div class="render-body" style="line-height:${lineHeight}; font-size:${fontSize}px;">${parsedBody}</div>
                         <div class="render-footer">
                             <span>${footerText}</span>
                             <span style="color: inherit; opacity: 0.8;">${i + 1} / ${pages.length}</span>
