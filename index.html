@@ -41,13 +41,14 @@
             align-items: center;
         }
         
-        h2 {
+        /* 這裡的 h2 僅針對介面標題，不影響卡片內部 */
+        h2.ui-title {
             font-family: 'Noto Serif TC', serif;
             color: var(--frame);
             font-weight: 700;
             margin: 0 0 1rem 0;
             display: flex;
-            align-items: baseline; /* 對齊基線 */
+            align-items: baseline; 
             gap: 10px;
         }
 
@@ -265,15 +266,27 @@
         .card-body p, .render-body p { margin-top: 0; margin-bottom: var(--para-spacing, 1em); white-space: pre-wrap; }
         .card-body p:last-child, .render-body p:last-child { margin-bottom: 0; }
         
-        .card-body h1, .render-body h1 { font-family: 'Noto Serif TC', serif; font-size: 1.4em; margin: 0.5em 0 0.3em; font-weight: 700; opacity: 0.9; }
+        /* 標題與引用：強制繼承顏色 (inherit) */
+        .card-body h1, .render-body h1,
+        .card-body h2, .render-body h2,
+        .card-body h3, .render-body h3 { 
+            font-family: 'Noto Serif TC', serif; 
+            color: inherit; /* 關鍵修正 */
+            margin-top: 0.5em; margin-bottom: 0.3em; 
+            font-weight: 700; opacity: 0.9; 
+        }
+        .card-body h1, .render-body h1 { font-size: 1.4em; }
+        .card-body h2, .render-body h2 { font-size: 1.25em; border-bottom: 1px solid currentColor; padding-bottom: 4px; opacity: 0.85; }
+        .card-body h3, .render-body h3 { font-size: 1.1em; opacity: 0.8; }
+
         .card-body blockquote, .render-body blockquote { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid currentColor; opacity: 0.7; font-style: italic; }
         
         .card-body table, .render-body table {
             width: 100%; border-collapse: separate; border-spacing: 0; margin: 0.8em 0;
             background: rgba(125, 125, 125, 0.08); border-radius: 8px; overflow: hidden; font-size: 0.9em;
         }
-        .card-body th, .render-body th { padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.03); }
-        .card-body td, .render-body td { padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .card-body th, .render-body th { padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.03); color: inherit; }
+        .card-body td, .render-body td { padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); color: inherit; }
 
         .card-footer, .render-footer {
             margin-top: 16px; padding-top: 12px; border-top: 1px solid currentColor; opacity: 0.6;
@@ -311,7 +324,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2>📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.5</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.5</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
