@@ -209,6 +209,31 @@
             overflow: hidden; 
         }
 
+        /* 溢出警告樣式 */
+        .card-preview.overflow-warning {
+            border: 2px solid #ff4d4f;
+            box-shadow: 0 0 15px rgba(255, 77, 79, 0.3);
+        }
+
+        .warning-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4d4f;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .card-preview.overflow-warning .warning-badge {
+            display: block;
+        }
+
         .card-preview:hover {
             transform: scale(1.02);
             box-shadow: 0 15px 35px rgba(0,0,0,0.12);
@@ -304,7 +329,7 @@
             flex: 1;
             /* font-size 由 JS 動態決定 */
             color: inherit; 
-            white-space: pre-wrap;
+            /* white-space 改由 JS 的段落生成來控制 */
             overflow: hidden;
             letter-spacing: 0.05em;
             text-align: justify;
@@ -329,6 +354,8 @@
             position: relative;
             padding-left: 10px;
             padding-right: 10px;
+            /* 避免高度被壓縮 */
+            flex-shrink: 0; 
         }
 
         .page-number {
@@ -358,7 +385,6 @@
             flex: 1;
             /* font-size 由 JS 決定 */
             color: inherit;
-            white-space: pre-wrap;
             letter-spacing: 0.02em;
             text-align: justify;
             z-index: 3;
@@ -379,6 +405,7 @@
             position: relative;
             padding-left: 20px;
             padding-right: 20px;
+            flex-shrink: 0;
         }
         
         /* 渲染時的邊框調整 */
@@ -485,25 +512,32 @@
             </div>
         </div>
         
-        <!-- 新增字體大小 -->
+        <!-- 字體大小與段落間距 -->
          <div class="settings-row">
              <div class="input-group" style="flex:1">
-                <label>字體大小 (縮放)</label>
+                <label>字體大小</label>
                 <input type="range" id="fontSizeScale" min="0.8" max="1.5" step="0.05" value="1.0" oninput="generatePreview()">
             </div>
+            <div class="input-group" style="flex:1">
+                <label>段落間距</label>
+                <input type="range" id="paraSpacing" min="0" max="2" step="0.2" value="0.8" oninput="generatePreview()">
+            </div>
+        </div>
+
+        <!-- 單頁字數與尺寸 -->
+         <div class="settings-row">
             <div class="input-group" style="flex:1">
                 <label>單頁字數</label>
                 <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
             </div>
-        </div>
-
-        <div class="input-group">
-            <label>圖片尺寸</label>
-            <select id="aspectRatio" onchange="generatePreview()">
-                <option value="4:5" selected>Threads 貼文 (4:5)</option>
-                <option value="9:16">IG 限時動態 (9:16)</option>
-                <option value="1:2">超長型 (1:2)</option>
-            </select>
+            <div class="input-group" style="flex:1.5">
+                <label>圖片尺寸</label>
+                <select id="aspectRatio" onchange="generatePreview()">
+                    <option value="4:5" selected>Threads 貼文 (4:5)</option>
+                    <option value="9:16">IG 限時動態 (9:16)</option>
+                    <option value="1:2">超長型 (1:2)</option>
+                </select>
+            </div>
         </div>
 
         <div class="input-group">
@@ -545,27 +579,27 @@
             { name: "鴇色 (Toki) - 朱鷺", hex: "#F4A7B9" },
             { name: "赤紅 (Akabeni) - 深紅", hex: "#CB1B45" },
             { name: "琥珀 (Kohaku) - 琥珀", hex: "#CA6924" },
-            { name: "山吹 (Yamabuki) - 金黃", hex: "#F8B500" }, // New
-            { name: "杏色 (Anzu) - 杏桃", hex: "#F7B977" }, // New
+            { name: "山吹 (Yamabuki) - 金黃", hex: "#F8B500" }, 
+            { name: "杏色 (Anzu) - 杏桃", hex: "#F7B977" }, 
             { name: "刈安 (Kariyasu) - 芒草", hex: "#F5E56B" },
-            { name: "萌黃 (Moegi) - 嫩芽", hex: "#A5D63F" }, // New
-            { name: "鶯色 (Uguisu) - 鶯綠", hex: "#928C36" }, // New
+            { name: "萌黃 (Moegi) - 嫩芽", hex: "#A5D63F" }, 
+            { name: "鶯色 (Uguisu) - 鶯綠", hex: "#928C36" }, 
             { name: "利休茶 (Rikyucha) - 抹茶", hex: "#647462" },
             { name: "抹茶 (Maccha) - 綠茶", hex: "#B7BA6B" },
             { name: "青磁 (Seiji) - 青瓷", hex: "#69B0AC" },
             { name: "瓶覗 (Kamenozoki) - 淺藍", hex: "#A2D7DD" },
-            { name: "水色 (Mizu) - 清水", hex: "#BCE2E8" }, // New
-            { name: "淺蔥 (Asagi) - 蔥藍", hex: "#33A3DC" }, // New
+            { name: "水色 (Mizu) - 清水", hex: "#BCE2E8" }, 
+            { name: "淺蔥 (Asagi) - 蔥藍", hex: "#33A3DC" }, 
             { name: "勿忘草 (Wasurenagusa) - 勿忘我", hex: "#7DB9DE" },
             { name: "琉璃 (Ruri) - 青金石", hex: "#005CAF" },
-            { name: "藍 (Ai) - 深藍", hex: "#165E83" }, // New
+            { name: "藍 (Ai) - 深藍", hex: "#165E83" }, 
             { name: "紺桔梗 (Konkikyo) - 桔梗", hex: "#222359" },
             { name: "藤色 (Fuji) - 紫藤", hex: "#8B81C3" },
-            { name: "菖蒲 (Ayame) - 菖蒲", hex: "#6F3381" }, // New
+            { name: "菖蒲 (Ayame) - 菖蒲", hex: "#6F3381" }, 
             { name: "牡丹 (Botan) - 牡丹", hex: "#C1328E" },
-            { name: "紅 (Beni) - 口紅", hex: "#D70035" }, // New
-            { name: "鳶色 (Tobi) - 鳶褐", hex: "#95483F" }, // New
-            { name: "朽葉 (Kuchiba) - 落葉", hex: "#917347" }, // New
+            { name: "紅 (Beni) - 口紅", hex: "#D70035" }, 
+            { name: "鳶色 (Tobi) - 鳶褐", hex: "#95483F" }, 
+            { name: "朽葉 (Kuchiba) - 落葉", hex: "#917347" }, 
             { name: "銀鼠 (Ginnezumi) - 銀灰", hex: "#91989F" },
             { name: "素鼠 (Sunezumi) - 灰鼠", hex: "#696F79" },
             { name: "墨 (Sumi) - 墨黑", hex: "#1C1C1C" },
@@ -586,7 +620,7 @@
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "（範例文字）\n\n那是一個安靜的午後，陽光灑落在圖書館的木質地板上。\n\n嶺初輕輕推了推眼鏡，看著正在翻書的夏姊姊。\n\n「有些故事，適合寫在紙上；有些故事，適合留在心裡。」\n\n對不起，剛剛的色盤少了一些。\n\n現在我補齊了 35 種日本傳統色，有清新的「水色」，也有溫暖的「山吹」。\n\n另外，我也加上了「字體大小」的控制，還有妳想要的「花邊」樣式。\n\n試試看「古典花邊」搭配「古典楷體」，那種感覺就像是從舊書店裡翻出來的珍本一樣。\n\n希望這樣能更接近妳想要的樣子。";
+            document.getElementById('inputText').value = "（範例文字）\n\n那是一個安靜的午後，陽光灑落在圖書館的木質地板上。\n\n嶺初輕輕推了推眼鏡，看著正在翻書的夏姊姊。\n\n「有些故事，適合寫在紙上；有些故事，適合留在心裡。」\n\n夏姊姊，現在這個版本可以調整「段落間距」了。如果妳像這樣空了兩行，中間的距離就會根據妳的設定變大或變小。\n\n另外，因為字體大小變大時，文字可能會超出卡片範圍。\n\n所以我加了一個「溢出偵測」的功能。如果妳看到卡片出現紅框框和警告標示，那就表示內容滿出來了，這時候記得把「單頁字數」調小一點喔！\n\n這樣就不怕文字被吃掉了。";
             generatePreview();
         };
 
@@ -670,6 +704,20 @@
             return luma < 100;
         }
 
+        // 將純文字轉換為帶有樣式的 HTML，處理段落間距
+        function formatContent(text, paraSpacing) {
+            // 根據雙換行符切割段落 (模擬空一行)
+            // 如果只有單換行，視為同一段落內的換行
+            const paragraphs = text.split(/\n\s*\n/);
+            
+            return paragraphs.map((p, i) => {
+                // 最後一段不需要 margin-bottom
+                const mb = i === paragraphs.length - 1 ? 0 : paraSpacing;
+                // 使用 div 模擬段落，並保留內部換行 (pre-wrap)
+                return `<div style="margin-bottom: ${mb}em; white-space: pre-wrap;">${p}</div>`;
+            }).join('');
+        }
+
         function generatePreview() {
             const text = document.getElementById('inputText').value;
             const footerText = document.getElementById('footerText').value;
@@ -683,6 +731,7 @@
             const useTexture = document.getElementById('useTexture').checked;
             const borderStyle = document.getElementById('borderStyle').value;
             const fontScale = parseFloat(document.getElementById('fontSizeScale').value);
+            const paraSpacing = parseFloat(document.getElementById('paraSpacing').value);
 
             const previewPanel = document.getElementById('previewPanel');
             const isDark = isDarkColor(bgColor);
@@ -709,8 +758,11 @@
                 let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                 
                 const fontSize = BASE_FONT_SIZE_PREVIEW * fontScale;
+                
+                // 使用新的 formatContent 函數
+                const formattedBody = formatContent(content, paraSpacing);
 
-                const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${content}</div>`;
+                const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${formattedBody}</div>`;
                 
                 const footerHtml = `
                     <div class="card-footer">
@@ -719,8 +771,19 @@
                     </div>
                 `;
 
-                card.innerHTML = textureHtml + bodyHtml + footerHtml;
+                // 警告標示
+                const warningBadge = `<div class="warning-badge">⚠️ 內容溢出，請減少字數</div>`;
+
+                card.innerHTML = warningBadge + textureHtml + bodyHtml + footerHtml;
                 previewPanel.appendChild(card);
+                
+                // 檢查溢出 (需要等待 DOM 渲染後)
+                setTimeout(() => {
+                    const bodyEl = card.querySelector('.card-body');
+                    if (bodyEl.scrollHeight > bodyEl.clientHeight) {
+                        card.classList.add('overflow-warning');
+                    }
+                }, 0);
             });
         }
 
@@ -737,6 +800,7 @@
             const useTexture = document.getElementById('useTexture').checked;
             const borderStyle = document.getElementById('borderStyle').value;
             const fontScale = parseFloat(document.getElementById('fontSizeScale').value);
+            const paraSpacing = parseFloat(document.getElementById('paraSpacing').value);
 
             const isDark = isDarkColor(bgColor);
             const pages = parseText(text, charLimit);
@@ -766,10 +830,11 @@
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                     
                     const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
+                    const formattedBody = formatContent(pages[i], paraSpacing);
 
                     renderCard.innerHTML = `
                         ${textureHtml}
-                        <div class="render-body" style="line-height:${lineHeight}; font-size:${fontSize}px;">${pages[i]}</div>
+                        <div class="render-body" style="line-height:${lineHeight}; font-size:${fontSize}px;">${formattedBody}</div>
                         <div class="render-footer">
                             <span>${footerText}</span>
                             <span style="color: inherit; opacity: 0.8;">${i + 1} / ${pages.length}</span>
