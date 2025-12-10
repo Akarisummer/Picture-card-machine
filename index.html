@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
 
         :root {
             --bg-color: #f5f5f7;
@@ -29,12 +30,12 @@
 
         /* 左側編輯區 */
         .editor-panel {
-            width: 360px;
+            width: 380px; 
             background: white;
             padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
             z-index: 10;
             overflow-y: auto;
@@ -59,6 +60,7 @@
         .settings-row {
             display: flex;
             gap: 15px;
+            align-items: center;
         }
 
         label {
@@ -78,7 +80,7 @@
             line-height: 1.6;
             outline: none;
             transition: border-color 0.2s;
-            min-height: 200px;
+            min-height: 150px;
         }
 
         textarea:focus {
@@ -96,6 +98,41 @@
             background: white;
         }
         
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+            flex-shrink: 0;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+        }
+        
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-color);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
         input:focus, select:focus {
             border-color: var(--accent-color);
         }
@@ -105,6 +142,7 @@
             gap: 10px;
             flex-direction: column;
             margin-top: auto;
+            padding-top: 10px;
         }
 
         .btn {
@@ -140,12 +178,6 @@
             background-color: #e5e5e5;
         }
 
-        .helper-text {
-            font-size: 0.75rem;
-            color: #999;
-            margin-top: -4px;
-        }
-
         /* 右側預覽區 */
         .preview-panel {
             flex: 1;
@@ -158,16 +190,15 @@
             justify-content: center;
             background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
             background-size: 20px 20px;
+            transition: background-color 0.3s;
         }
 
         /* 卡片本體 */
         .card-preview {
             width: 360px;
-            /* height 由 JS 動態決定 */
             background: var(--card-bg);
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
-            /* 修正預覽 Padding 以匹配輸出比例 (100px/3 = 33.3px) */
             padding: 33px 30px; 
             box-sizing: border-box;
             display: flex;
@@ -175,6 +206,7 @@
             position: relative;
             transform-origin: center top;
             transition: all 0.3s;
+            overflow: hidden; 
         }
 
         .card-preview:hover {
@@ -182,38 +214,129 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.12);
         }
 
+        /* 紋理層 */
+        .texture-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            opacity: 0.4;
+            mix-blend-mode: multiply;
+            z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+        }
+
+        .card-preview.dark-mode .texture-overlay {
+             mix-blend-mode: overlay;
+             opacity: 0.15;
+        }
+
+        /* 花邊裝飾樣式 (使用偽元素實現，顏色繼承文字色) */
+        .border-none::after { display: none; }
+
+        /* 1. 細線框 */
+        .border-simple::after {
+            content: '';
+            position: absolute;
+            top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border: 1px solid currentColor;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 2. 雙線框 */
+        .border-double::after {
+            content: '';
+            position: absolute;
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 3px double currentColor;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 3. 四角裝飾 */
+        .border-corners::after {
+            content: '';
+            position: absolute;
+            top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border: 1px solid currentColor;
+            /* 利用 clip-path 切出四個角 */
+            clip-path: polygon(
+                0 20px, 0 0, 20px 0, 
+                calc(100% - 20px) 0, 100% 0, 100% 20px,
+                100% calc(100% - 20px), 100% 100%, calc(100% - 20px) 100%,
+                20px 100%, 0 100%, 0 calc(100% - 20px)
+            );
+            /* 中間挖空，只留角 */
+            -webkit-mask: 
+                linear-gradient(#fff, #fff),
+                linear-gradient(#fff, #fff);
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            
+            /* 上面mask太複雜，用簡單的漸層遮罩模擬四角 */
+            mask-image: linear-gradient(to right, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px)),
+                        linear-gradient(to bottom, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px));
+            mask-composite: add;
+            
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 4. 古典花邊 (CSS 模擬) */
+        .border-vintage::after {
+            content: '';
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid currentColor;
+            outline: 1px solid currentColor;
+            outline-offset: -4px;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        /* 內文 */
         .card-body {
             flex: 1;
-            /* 修正預覽字體大小以匹配輸出比例 (34px/3 = 11.33px) */
-            font-size: 11.5px; 
-            line-height: 1.65;
-            color: #1a1a1a;
+            /* font-size 由 JS 動態決定 */
+            color: inherit; 
             white-space: pre-wrap;
             overflow: hidden;
-            font-family: 'Noto Serif TC', serif;
             letter-spacing: 0.05em;
             text-align: justify;
+            z-index: 3; 
+            position: relative;
+            /* 讓花邊不壓住文字 */
+            padding: 10px; 
         }
 
         .card-footer {
             margin-top: 16px;
             padding-top: 12px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid currentColor;
+            opacity: 0.6; 
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 11px;
-            color: #888;
             font-family: 'Noto Sans TC', sans-serif;
             letter-spacing: 0.1em;
+            z-index: 3;
+            position: relative;
+            padding-left: 10px;
+            padding-right: 10px;
         }
 
         .page-number {
             font-variant-numeric: tabular-nums;
-            color: var(--accent-color);
+            font-weight: bold;
         }
 
-        /* 隱藏的渲染容器，用於高畫質輸出 */
+        /* 隱藏的渲染容器 */
         #render-container {
             position: fixed;
             left: -9999px;
@@ -221,36 +344,52 @@
         }
 
         .render-card {
-            width: 1080px; /* 固定寬度 1080px */
-            /* height 由 JS 動態決定 */
+            width: 1080px; 
             background: white;
             padding: 100px 90px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            font-family: 'Noto Serif TC', serif;
+            position: relative;
+            overflow: hidden;
         }
 
         .render-body {
             flex: 1;
-            font-size: 34px;
-            line-height: 1.65;
-            color: #1a1a1a;
+            /* font-size 由 JS 決定 */
+            color: inherit;
             white-space: pre-wrap;
             letter-spacing: 0.02em;
             text-align: justify;
+            z-index: 3;
+            position: relative;
+            padding: 20px;
         }
 
         .render-footer {
             margin-top: 40px;
             padding-top: 30px;
-            border-top: 2px solid #f0f0f0;
+            border-top: 2px solid currentColor;
+            opacity: 0.6;
             display: flex;
             justify-content: space-between;
             font-size: 28px;
-            color: #888;
             font-family: 'Noto Sans TC', sans-serif;
+            z-index: 3;
+            position: relative;
+            padding-left: 20px;
+            padding-right: 20px;
         }
+        
+        /* 渲染時的邊框調整 */
+        .render-card.border-simple::after { top: 45px; left: 45px; right: 45px; bottom: 45px; border-width: 3px; }
+        .render-card.border-double::after { top: 36px; left: 36px; right: 36px; bottom: 36px; border-width: 9px; }
+        .render-card.border-corners::after { top: 45px; left: 45px; right: 45px; bottom: 45px; border-width: 3px; 
+             mask-image: linear-gradient(to right, black 60px, transparent 60px, transparent calc(100% - 60px), black calc(100% - 60px)),
+                        linear-gradient(to bottom, black 60px, transparent 60px, transparent calc(100% - 60px), black calc(100% - 60px));
+        }
+        .render-card.border-vintage::after { top: 30px; left: 30px; right: 30px; bottom: 30px; border-width: 3px; outline-width: 3px; outline-offset: -12px;}
+
 
         /* 載入遮罩 */
         #loading {
@@ -288,8 +427,78 @@
     <div class="editor-panel">
         <h2>📑 文字圖卡機</h2>
         
+        <!-- 顏色設定 -->
+        <div class="settings-row">
+            <div class="input-group" style="flex:1">
+                <label>卡片底色</label>
+                <div class="color-picker-wrapper">
+                    <select id="bgSelect" onchange="syncColor('bg')"></select>
+                    <input type="color" id="bgColor" value="#FFFFFB" onchange="syncSelect('bg')">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-row">
+            <div class="input-group" style="flex:1">
+                <label>文字顏色</label>
+                <div class="color-picker-wrapper">
+                    <select id="textSelect" onchange="syncColor('text')"></select>
+                    <input type="color" id="textColor" value="#1C1C1C" onchange="syncSelect('text')">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 紋理與花邊 -->
         <div class="input-group">
-            <label>圖片尺寸 (Aspect Ratio)</label>
+            <div class="settings-row" style="align-items: center;">
+                 <div class="checkbox-group" style="flex:1">
+                    <input type="checkbox" id="useTexture" onchange="generatePreview()"> 
+                    <label for="useTexture" style="cursor:pointer; font-weight:normal; color:#333;">啟用紙張紋理</label>
+                </div>
+                <div class="input-group" style="flex:1">
+                    <select id="borderStyle" onchange="generatePreview()">
+                        <option value="border-none">無邊框</option>
+                        <option value="border-simple">細線框</option>
+                        <option value="border-double">雙線框</option>
+                        <option value="border-corners">四角裝飾</option>
+                        <option value="border-vintage">古典花邊</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 字型與行距 -->
+        <div class="settings-row">
+            <div class="input-group" style="flex:1">
+                <label>字型風格</label>
+                <select id="fontStyle" onchange="generatePreview()">
+                    <option value="'Noto Serif TC', serif" selected>文學明體</option>
+                    <option value="'Noto Sans TC', sans-serif">現代黑體</option>
+                    <option value="'KaiTi', 'BiauKai', 'DFKai-SB', serif">古典楷體</option>
+                    <option value="'Ma Shan Zheng', cursive">書法手寫</option>
+                    <option value="'ZCOOL XiaoWei', serif">人文宋體</option>
+                </select>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>行距</label>
+                <input type="range" id="lineHeight" min="1.2" max="2.4" step="0.1" value="1.6" oninput="generatePreview()">
+            </div>
+        </div>
+        
+        <!-- 新增字體大小 -->
+         <div class="settings-row">
+             <div class="input-group" style="flex:1">
+                <label>字體大小 (縮放)</label>
+                <input type="range" id="fontSizeScale" min="0.8" max="1.5" step="0.05" value="1.0" oninput="generatePreview()">
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>單頁字數</label>
+                <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>圖片尺寸</label>
             <select id="aspectRatio" onchange="generatePreview()">
                 <option value="4:5" selected>Threads 貼文 (4:5)</option>
                 <option value="9:16">IG 限時動態 (9:16)</option>
@@ -297,23 +506,14 @@
             </select>
         </div>
 
-        <div class="settings-row">
-            <div class="input-group" style="flex:1">
-                <label>單頁字數限制</label>
-                <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
-                <p class="helper-text">預設 500 字</p>
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>頁尾署名</label>
-                <input type="text" id="footerText" value="燁 & 夏">
-                <p class="helper-text">顯示在底部</p>
-            </div>
+        <div class="input-group">
+            <label>頁尾署名</label>
+            <input type="text" id="footerText" value="燁 & 夏">
         </div>
 
         <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
             <label>輸入內容</label>
-            <textarea id="inputText" placeholder="在這裡貼上文字...&#10;&#10;輸入 '===' 可以強制分頁&#10;&#10;例如：&#10;這是第一頁的內容&#10;===&#10;這是第二頁的內容"></textarea>
-            <p class="helper-text">將根據字數限制自動切分段落。</p>
+            <textarea id="inputText" placeholder="在這裡貼上文字..."></textarea>
         </div>
 
         <div class="controls">
@@ -321,41 +521,119 @@
                 🔄 更新預覽
             </button>
             <button class="btn btn-secondary" onclick="downloadAll()">
-                ⬇️ 下載全部圖片 (高畫質)
+                ⬇️ 下載全部圖片
             </button>
         </div>
     </div>
 
-    <div class="preview-panel" id="previewPanel">
-        <!-- 預覽卡片會出現在這裡 -->
-    </div>
-
-    <!-- 用於輸出的隱藏容器 -->
+    <div class="preview-panel" id="previewPanel"></div>
     <div id="render-container"></div>
     
-    <!-- 載入動畫 -->
     <div id="loading">
         <div class="spinner"></div>
         <div id="loadingText">正在生成圖片...</div>
     </div>
 
     <script>
-        // 尺寸定義 (寬度固定為 1080，高度根據比例算)
+        // 日本傳統色數據 (補齊至 35 色)
+        const NIPPON_COLORS = [
+            { name: "胡粉 (Gofun) - 潔白", hex: "#FFFFFB" },
+            { name: "生成 (Kinari) - 棉麻", hex: "#FCD575" },
+            { name: "練色 (Neriiro) - 絲絹", hex: "#D6C6AF" },
+            { name: "櫻色 (Sakura) - 櫻花", hex: "#FEDFE1" },
+            { name: "紅梅 (Kobai) - 梅花", hex: "#F2A0A1" },
+            { name: "鴇色 (Toki) - 朱鷺", hex: "#F4A7B9" },
+            { name: "赤紅 (Akabeni) - 深紅", hex: "#CB1B45" },
+            { name: "琥珀 (Kohaku) - 琥珀", hex: "#CA6924" },
+            { name: "山吹 (Yamabuki) - 金黃", hex: "#F8B500" }, // New
+            { name: "杏色 (Anzu) - 杏桃", hex: "#F7B977" }, // New
+            { name: "刈安 (Kariyasu) - 芒草", hex: "#F5E56B" },
+            { name: "萌黃 (Moegi) - 嫩芽", hex: "#A5D63F" }, // New
+            { name: "鶯色 (Uguisu) - 鶯綠", hex: "#928C36" }, // New
+            { name: "利休茶 (Rikyucha) - 抹茶", hex: "#647462" },
+            { name: "抹茶 (Maccha) - 綠茶", hex: "#B7BA6B" },
+            { name: "青磁 (Seiji) - 青瓷", hex: "#69B0AC" },
+            { name: "瓶覗 (Kamenozoki) - 淺藍", hex: "#A2D7DD" },
+            { name: "水色 (Mizu) - 清水", hex: "#BCE2E8" }, // New
+            { name: "淺蔥 (Asagi) - 蔥藍", hex: "#33A3DC" }, // New
+            { name: "勿忘草 (Wasurenagusa) - 勿忘我", hex: "#7DB9DE" },
+            { name: "琉璃 (Ruri) - 青金石", hex: "#005CAF" },
+            { name: "藍 (Ai) - 深藍", hex: "#165E83" }, // New
+            { name: "紺桔梗 (Konkikyo) - 桔梗", hex: "#222359" },
+            { name: "藤色 (Fuji) - 紫藤", hex: "#8B81C3" },
+            { name: "菖蒲 (Ayame) - 菖蒲", hex: "#6F3381" }, // New
+            { name: "牡丹 (Botan) - 牡丹", hex: "#C1328E" },
+            { name: "紅 (Beni) - 口紅", hex: "#D70035" }, // New
+            { name: "鳶色 (Tobi) - 鳶褐", hex: "#95483F" }, // New
+            { name: "朽葉 (Kuchiba) - 落葉", hex: "#917347" }, // New
+            { name: "銀鼠 (Ginnezumi) - 銀灰", hex: "#91989F" },
+            { name: "素鼠 (Sunezumi) - 灰鼠", hex: "#696F79" },
+            { name: "墨 (Sumi) - 墨黑", hex: "#1C1C1C" },
+            { name: "消炭 (Keshizumi) - 炭灰", hex: "#434343" },
+            { name: "呂色 (Roivo) - 漆黑", hex: "#0C0C0C" },
+            { name: "黑鶴羽 (Kurotsurubami) - 深褐黑", hex: "#0B1013" },
+        ];
+
         const RATIOS = {
-            "4:5": { w: 1080, h: 1350, previewH: 450 }, // 360 * (5/4)
-            "9:16": { w: 1080, h: 1920, previewH: 640 }, // 360 * (16/9)
-            "1:2": { w: 1080, h: 2160, previewH: 720 }  // 360 * 2
+            "4:5": { w: 1080, h: 1350, previewH: 450 }, 
+            "9:16": { w: 1080, h: 1920, previewH: 640 }, 
+            "1:2": { w: 1080, h: 2160, previewH: 720 }  
         };
 
-        // 初始化
+        // 基礎字體大小 (Render / Preview)
+        const BASE_FONT_SIZE_RENDER = 34;
+        const BASE_FONT_SIZE_PREVIEW = 11.5;
+
         window.onload = function() {
-            document.getElementById('inputText').value = "（範例文字）\n\n那是一個安靜的午後，陽光灑落在圖書館的木質地板上。\n\n嶺初輕輕推了推眼鏡，看著正在翻書的夏姊姊。\n\n「有些故事，適合寫在紙上；有些故事，適合留在心裡。」\n\n現在這個版本，妳可以自由調整版面長度了。如果選了「9:16」或「1:2」，單張圖片就會變得很長，能容納更多的文字，就像捲軸一樣。\n\n字數限制也可以自己設定，如果想要一頁塞滿滿的，可以設到 800 字以上；如果想要留白多一點，就設少一點。\n\n試著切換上面的尺寸選單，看看效果吧！";
+            initColorPickers();
+            document.getElementById('inputText').value = "（範例文字）\n\n那是一個安靜的午後，陽光灑落在圖書館的木質地板上。\n\n嶺初輕輕推了推眼鏡，看著正在翻書的夏姊姊。\n\n「有些故事，適合寫在紙上；有些故事，適合留在心裡。」\n\n對不起，剛剛的色盤少了一些。\n\n現在我補齊了 35 種日本傳統色，有清新的「水色」，也有溫暖的「山吹」。\n\n另外，我也加上了「字體大小」的控制，還有妳想要的「花邊」樣式。\n\n試試看「古典花邊」搭配「古典楷體」，那種感覺就像是從舊書店裡翻出來的珍本一樣。\n\n希望這樣能更接近妳想要的樣子。";
             generatePreview();
         };
 
+        function initColorPickers() {
+            const bgSelect = document.getElementById('bgSelect');
+            const textSelect = document.getElementById('textSelect');
+            
+            NIPPON_COLORS.forEach(c => {
+                const opt1 = new Option(c.name, c.hex);
+                const opt2 = new Option(c.name, c.hex);
+                bgSelect.add(opt1);
+                textSelect.add(opt2);
+            });
+            
+            bgSelect.add(new Option("--- 自訂 ---", "custom"));
+            textSelect.add(new Option("--- 自訂 ---", "custom"));
+
+            bgSelect.value = "#FFFFFB"; 
+            textSelect.value = "#1C1C1C"; 
+            
+            document.getElementById('bgColor').value = "#FFFFFB";
+            document.getElementById('textColor').value = "#1C1C1C";
+        }
+
+        function syncColor(type) {
+            const select = document.getElementById(type + 'Select');
+            const input = document.getElementById(type + 'Color');
+            if (select.value !== 'custom') input.value = select.value;
+            generatePreview();
+        }
+
+        function syncSelect(type) {
+            const select = document.getElementById(type + 'Select');
+            const input = document.getElementById(type + 'Color');
+            let match = false;
+            for(let i=0; i<select.options.length; i++) {
+                if (select.options[i].value.toLowerCase() === input.value.toLowerCase()) {
+                    select.selectedIndex = i;
+                    match = true;
+                    break;
+                }
+            }
+            if (!match) select.value = 'custom';
+            generatePreview();
+        }
+
         function parseText(text, limit) {
-            // 處理分頁邏輯
-            // 1. 先用 === 強制分頁
             const rawPages = text.split('===');
             let finalPages = [];
 
@@ -363,12 +641,9 @@
                 let content = page.trim();
                 if (!content) return;
 
-                // 2. 如果單頁字數過多，自動再切分
-                if (content.length > limit * 1.5) { // 寬容度 1.5 倍
-                    // 簡單的自動切分邏輯：按段落切
+                if (content.length > limit * 1.5) { 
                     let paragraphs = content.split('\n');
                     let currentChunk = "";
-                    
                     paragraphs.forEach(para => {
                         if ((currentChunk.length + para.length) > limit) {
                             if(currentChunk) finalPages.push(currentChunk.trim());
@@ -382,8 +657,17 @@
                     finalPages.push(content);
                 }
             });
-
             return finalPages;
+        }
+        
+        function isDarkColor(hex) {
+            let c = hex.substring(1);      
+            let rgb = parseInt(c, 16);   
+            let r = (rgb >> 16) & 0xff;  
+            let g = (rgb >>  8) & 0xff;  
+            let b = (rgb >>  0) & 0xff;  
+            let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; 
+            return luma < 100;
         }
 
         function generatePreview() {
@@ -391,9 +675,19 @@
             const footerText = document.getElementById('footerText').value;
             const charLimit = parseInt(document.getElementById('charLimit').value) || 500;
             const ratioKey = document.getElementById('aspectRatio').value;
-            const previewPanel = document.getElementById('previewPanel');
             
-            previewPanel.innerHTML = ''; // 清空
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const fontStyle = document.getElementById('fontStyle').value;
+            const lineHeight = document.getElementById('lineHeight').value;
+            const useTexture = document.getElementById('useTexture').checked;
+            const borderStyle = document.getElementById('borderStyle').value;
+            const fontScale = parseFloat(document.getElementById('fontSizeScale').value);
+
+            const previewPanel = document.getElementById('previewPanel');
+            const isDark = isDarkColor(bgColor);
+
+            previewPanel.innerHTML = ''; 
 
             const pages = parseText(text, charLimit);
             const ratioConfig = RATIOS[ratioKey];
@@ -405,17 +699,27 @@
 
             pages.forEach((content, index) => {
                 const card = document.createElement('div');
-                card.className = 'card-preview';
-                // 設定預覽高度
-                card.style.height = ratioConfig.previewH + 'px';
+                card.className = `card-preview ${borderStyle}`;
+                if (isDark) card.classList.add('dark-mode');
                 
-                card.innerHTML = `
-                    <div class="card-body">${content}</div>
+                card.style.height = ratioConfig.previewH + 'px';
+                card.style.backgroundColor = bgColor;
+                card.style.color = textColor;
+                
+                let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
+                
+                const fontSize = BASE_FONT_SIZE_PREVIEW * fontScale;
+
+                const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${content}</div>`;
+                
+                const footerHtml = `
                     <div class="card-footer">
                         <span>${footerText}</span>
                         <span class="page-number">${index + 1} / ${pages.length}</span>
                     </div>
                 `;
+
+                card.innerHTML = textureHtml + bodyHtml + footerHtml;
                 previewPanel.appendChild(card);
             });
         }
@@ -425,6 +729,16 @@
             const footerText = document.getElementById('footerText').value;
             const charLimit = parseInt(document.getElementById('charLimit').value) || 500;
             const ratioKey = document.getElementById('aspectRatio').value;
+            
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const fontStyle = document.getElementById('fontStyle').value;
+            const lineHeight = document.getElementById('lineHeight').value;
+            const useTexture = document.getElementById('useTexture').checked;
+            const borderStyle = document.getElementById('borderStyle').value;
+            const fontScale = parseFloat(document.getElementById('fontSizeScale').value);
+
+            const isDark = isDarkColor(bgColor);
             const pages = parseText(text, charLimit);
             const container = document.getElementById('render-container');
             const loading = document.getElementById('loading');
@@ -432,49 +746,52 @@
             if (pages.length === 0) return;
 
             loading.style.display = 'flex';
-            container.innerHTML = ''; // 清空渲染區
+            container.innerHTML = ''; 
 
             const ratioConfig = RATIOS[ratioKey];
 
             try {
-                // 依序生成並下載
                 for (let i = 0; i < pages.length; i++) {
                     document.getElementById('loadingText').innerText = `正在輸出第 ${i + 1} / ${pages.length} 張...`;
                     
-                    // 建立高畫質 DOM
                     const renderCard = document.createElement('div');
-                    renderCard.className = 'render-card';
-                    // 設定輸出高度
+                    renderCard.className = `render-card ${borderStyle}`;
+                    if (isDark) renderCard.classList.add('dark-mode');
+
                     renderCard.style.height = ratioConfig.h + 'px';
+                    renderCard.style.backgroundColor = bgColor;
+                    renderCard.style.color = textColor;
+                    renderCard.style.fontFamily = fontStyle; 
+
+                    let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                     
+                    const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
+
                     renderCard.innerHTML = `
-                        <div class="render-body">${pages[i]}</div>
+                        ${textureHtml}
+                        <div class="render-body" style="line-height:${lineHeight}; font-size:${fontSize}px;">${pages[i]}</div>
                         <div class="render-footer">
                             <span>${footerText}</span>
-                            <span style="color: #5d7a73;">${i + 1} / ${pages.length}</span>
+                            <span style="color: inherit; opacity: 0.8;">${i + 1} / ${pages.length}</span>
                         </div>
                     `;
                     container.appendChild(renderCard);
 
-                    // 等待字體載入
                     await document.fonts.ready;
 
-                    // 截圖
                     const canvas = await html2canvas(renderCard, {
                         scale: 1, 
                         useCORS: true,
-                        backgroundColor: '#ffffff',
+                        backgroundColor: bgColor, 
                         width: ratioConfig.w,
                         height: ratioConfig.h
                     });
 
-                    // 下載
                     const link = document.createElement('a');
                     link.download = `threads_story_${i + 1}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
 
-                    // 稍微延遲
                     await new Promise(r => setTimeout(r, 500));
                     container.removeChild(renderCard);
                 }
