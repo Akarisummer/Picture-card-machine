@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.5</title>
+    <title>故事印刷所 v2.6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -41,7 +41,6 @@
             align-items: center;
         }
         
-        /* 這裡的 h2 僅針對介面標題，不影響卡片內部 */
         h2.ui-title {
             font-family: 'Noto Serif TC', serif;
             color: var(--frame);
@@ -90,7 +89,6 @@
             overflow: visible; 
         }
 
-        /* 蕾絲裝飾 */
         .app-container::before, .app-container::after {
             content: ""; position: absolute; left: 0; right: 0; height: 52px;
             background-size: contain; background-repeat: repeat-x; pointer-events: none; z-index: 20;
@@ -239,7 +237,6 @@
         }
         .card-preview.overflow-warning .warning-badge { display: block; }
 
-        /* 紋理與花邊 */
         .texture-overlay {
             position: absolute; inset: 0; pointer-events: none; opacity: 0.4;
             mix-blend-mode: multiply; z-index: 1;
@@ -247,7 +244,6 @@
         }
         .card-preview.dark-mode .texture-overlay { mix-blend-mode: overlay; opacity: 0.15; }
 
-        /* 邊框樣式 */
         .border-none::after { display: none; }
         .border-simple::after { content: ''; position: absolute; inset: 15px; border: 1px solid currentColor; opacity: 0.5; pointer-events: none; z-index: 2; }
         .border-double::after { content: ''; position: absolute; inset: 12px; border: 3px double currentColor; opacity: 0.6; pointer-events: none; z-index: 2; }
@@ -258,20 +254,23 @@
         }
         .border-vintage::after { content: ''; position: absolute; inset: 10px; border: 1px solid currentColor; outline: 1px solid currentColor; outline-offset: -4px; opacity: 0.4; pointer-events: none; z-index: 2; }
 
-        /* 內文 */
         .card-body, .render-body {
             flex: 1; color: inherit; overflow: hidden; letter-spacing: 0.05em; text-align: justify;
             z-index: 3; position: relative; padding: 10px; word-break: break-word;
         }
-        .card-body p, .render-body p { margin-top: 0; margin-bottom: var(--para-spacing, 1em); white-space: pre-wrap; }
+        /* 段落間距變數應用 */
+        .card-body p, .render-body p { 
+            margin-top: 0; 
+            margin-bottom: var(--para-spacing, 1em); 
+            white-space: pre-wrap; 
+        }
         .card-body p:last-child, .render-body p:last-child { margin-bottom: 0; }
         
-        /* 標題與引用：強制繼承顏色 (inherit) */
         .card-body h1, .render-body h1,
         .card-body h2, .render-body h2,
         .card-body h3, .render-body h3 { 
             font-family: 'Noto Serif TC', serif; 
-            color: inherit; /* 關鍵修正 */
+            color: inherit;
             margin-top: 0.5em; margin-bottom: 0.3em; 
             font-weight: 700; opacity: 0.9; 
         }
@@ -324,7 +323,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.5</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.6</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -433,8 +432,13 @@
             </div>
 
             <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
-                <label>輸入內容 (支援 Markdown)</label>
+                <label>輸入內容</label>
                 <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
+                
+                <div class="checkbox-group" style="margin-top:8px;">
+                    <input type="checkbox" id="autoParagraph" onchange="generatePreview()">
+                    <label for="autoParagraph" style="cursor:pointer; white-space:nowrap; font-weight:500; font-size: 0.8rem; color:#666;">智慧換行 (手機專用：單換行變段落)</label>
+                </div>
             </div>
 
             <div class="controls">
@@ -508,7 +512,7 @@
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n歡迎來到「故事印刷所」。\n\n現在我們有了這個溫柔的名字，還有更符合書房氣息的介面。\n\n願這裡能成為妳和燁先生故事的美麗載體。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n歡迎來到「故事印刷所」。\n\n現在我們修復了手機版字體太小的問題，還加了一個「智慧換行」開關。\n\n如果在手機上打字覺得段落太擠，試試看把左邊的「智慧換行」打勾，間距就會出來囉！";
             generatePreview();
         };
 
@@ -556,12 +560,27 @@
         }
 
         function parseText(text, limit) {
-            const rawPages = text.split('===');
+            // 智慧換行處理 (將單換行轉為雙換行，實現段落效果)
+            const autoParagraph = document.getElementById('autoParagraph').checked;
+            let processedText = text;
+            
+            if (autoParagraph) {
+                // 將單換行替換為雙換行，但忽略已有的雙換行
+                // 這裡簡單處理：先統一正規化，再替換
+                processedText = text.replace(/\r\n/g, '\n'); 
+                // 避免已經是雙換行的變四換行，先拆成行，再過濾空行重組？
+                // 簡單策略：把所有 \n 變成 \n\n，這樣原本的空行會變更大，但 Markdown 會忽略多餘空行
+                // 比較好的做法：看使用者需求。這裡做簡單的轉換：非連續的 \n 變成 \n\n
+                processedText = processedText.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
+            }
+
+            const rawPages = processedText.split('===');
             let finalPages = [];
             rawPages.forEach(page => {
                 let content = page.trim();
                 if (!content) return;
                 if (content.length > limit * 1.5) { 
+                    // 分割邏輯：優先在雙換行處分割
                     let paragraphs = content.split(/\n\s*\n/);
                     let currentChunk = "";
                     paragraphs.forEach(para => {
@@ -735,12 +754,15 @@
                     let mimeType = 'image/png';
                     if (fileFormat === 'jpeg') mimeType = 'image/jpeg';
 
+                    // 關鍵修正：強制 windowWidth 模擬電腦寬度，防止手機版縮圖
                     const canvas = await html2canvas(renderCard, {
-                        scale: 1, 
+                        scale: 2, 
                         useCORS: true,
                         backgroundColor: bgColor, 
                         width: ratioConfig.w,
-                        height: ratioConfig.h
+                        height: ratioConfig.h,
+                        windowWidth: 1600, // 強制模擬 1600px 寬螢幕
+                        windowHeight: 1200 // 強制模擬高度
                     });
 
                     const dataUrl = canvas.toDataURL(mimeType, 0.9);
