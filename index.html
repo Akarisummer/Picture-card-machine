@@ -10,234 +10,255 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@300;400;600&display=swap');
+        /* ===================== 字體與變數 ===================== */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
 
         :root {
-            --bg-color: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --accent-color: #5d7a73;
+            --ink: #27272a;
+            --blue: #cfeaf6;
+            --accent: #6e8f98;
+            --frame: #33A6B8;
+            --radius: 20px;
+            --card-radius: 20px 10px 20px 10px; /* 不對稱圓角 */
+        }
+
+        /* ===================== 全域樣式 ===================== */
+        html {
+            background-color: var(--frame);
+            height: 100%;
         }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--ink);
             margin: 0;
             padding: 0;
+            height: 100%;
+            overflow: hidden; /* 讓捲動發生在卡片內部 */
             display: flex;
-            height: 100vh;
-            overflow: hidden; /* 電腦版不捲動 body */
-        }
-
-        /* 左側編輯區 */
-        .editor-panel {
-            width: 380px; 
-            background: white;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            z-index: 10;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: var(--accent-color);
-            font-weight: 500;
-            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 8px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
         }
         
-        .settings-row {
+        h2 {
+            font-family: 'Noto Serif TC', serif;
+            color: var(--frame);
+            font-weight: 700;
+            margin: 0 0 1rem 0;
             display: flex;
-            gap: 15px;
             align-items: center;
+            gap: 10px;
         }
 
+        /* ===================== 雙框版型 (.page-wrap) ===================== */
+        .page-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .page-bg::before {
+            content: ""; position: absolute; inset: 0;
+            box-shadow: inset 0 0 0 15px var(--frame);
+        }
+        .page-bg::after {
+            content: ""; position: absolute; inset: 25px;
+            box-shadow: inset 0 0 0 1px var(--frame);
+        }
+        
+        @media(max-width:640px) {
+            .page-bg::before { box-shadow: inset 0 0 0 10px var(--frame); }
+            .page-bg::after { inset: 14px; }
+            body { overflow-y: auto; display: block; height: auto; } /* 手機版改為自然捲動 */
+        }
+
+        /* ===================== 蕾絲卡片容器 ===================== */
+        .app-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95); /* 微微透一點點 */
+            width: 95%;
+            max-width: 1100px;
+            height: 90vh; /* 電腦版固定高度 */
+            margin: 2rem auto;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: row;
+            overflow: hidden; /* 內部捲動 */
+        }
+
+        /* 蕾絲裝飾 (偽元素) */
+        .app-container::before, .app-container::after {
+            content: ""; position: absolute; left: 0; right: 0; height: 52px;
+            background-size: contain; background-repeat: repeat-x; pointer-events: none; z-index: 20;
+        }
+        .app-container::before {
+            top: -50px; 
+            background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊1.png');
+        }
+        .app-container::after {
+            bottom: -50px; 
+            background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊2.png');
+        }
+
+        @media(max-width:900px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+                margin: 4rem auto; /* 留給蕾絲空間 */
+                overflow: visible;
+                width: 90%;
+            }
+            .app-container::before { top: -40px; height: 40px; }
+            .app-container::after { bottom: -40px; height: 40px; }
+        }
+
+        /* ===================== 左側：編輯區 ===================== */
+        .editor-panel {
+            flex: 0 0 380px;
+            padding: 30px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(51, 166, 184, 0.2); /* var(--frame) with opacity */
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        
+        .editor-panel::-webkit-scrollbar { width: 6px; }
+        .editor-panel::-webkit-scrollbar-thumb { background: rgba(51, 166, 184, 0.3); border-radius: 3px; }
+
+        /* 輸入元件樣式 (仿網站風格) */
         label {
             font-size: 0.85rem;
-            color: #666;
-            font-weight: 500;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        textarea, input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--frame);
+            border-radius: var(--card-radius); /* 不對稱圓角 */
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.25s;
+            box-sizing: border-box;
+            background: #fff;
+            color: var(--ink);
+        }
+
+        textarea:focus, input:focus, select:focus {
+            background: var(--blue);
+            color: var(--ink);
         }
 
         textarea {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            resize: none;
-            font-family: 'Noto Sans TC', sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            outline: none;
-            transition: border-color 0.2s;
+            resize: vertical;
             min-height: 150px;
+            line-height: 1.6;
         }
 
-        textarea:focus {
-            border-color: var(--accent-color);
-        }
-        
-        input[type="text"], input[type="number"], select {
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            width: 100%;
-            box-sizing: border-box;
-            background: white;
-        }
-        
+        /* 顏色選擇器特殊處理 */
         .color-picker-wrapper {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
         input[type="color"] {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            background: none;
-            flex-shrink: 0;
+            width: 44px; height: 44px; padding: 0; border: 2px solid var(--frame);
+            border-radius: 50%; cursor: pointer; background: none; flex-shrink: 0; overflow: hidden;
         }
-        
+
+        /* Range Slider */
         input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent-color);
+            width: 100%; accent-color: var(--frame); height: 6px; background: #eee; border-radius: 3px; border: none; padding: 0;
         }
-        
+
+        /* Checkbox */
+        .checkbox-group { display: flex; align-items: center; gap: 8px; }
         input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--accent-color);
-            cursor: pointer;
+            width: 18px; height: 18px; accent-color: var(--frame); border-radius: 4px; border: 2px solid var(--frame); margin: 0;
         }
 
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 5px;
-        }
-        
-        input:focus, select:focus {
-            border-color: var(--accent-color);
-        }
-
+        /* 按鈕 (.btn style) */
         .controls {
-            display: flex;
-            gap: 10px;
-            flex-direction: column;
             margin-top: auto;
-            padding-top: 10px;
-            padding-bottom: 20px; /* 手機版底部留白 */
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 20px;
         }
 
         .btn {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
+            display: inline-flex; justify-content: center; align-items: center; gap: 8px;
+            padding: 0.78rem 1.4rem;
+            border-radius: 999px;
+            background: #fff;
+            color: var(--ink);
+            font-weight: 600;
+            border: 2px solid var(--ink);
+            transition: 0.25s;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            font-size: 1rem;
         }
 
         .btn-primary {
-            background-color: var(--accent-color);
-            color: white;
+            background: var(--frame);
+            color: #fff;
+            border-color: var(--frame);
         }
-
         .btn-primary:hover {
-            background-color: #4a635c;
-            transform: translateY(-1px);
+            background: #fff;
+            color: var(--frame);
         }
 
         .btn-secondary {
-            background-color: #f0f0f0;
-            color: #555;
+            background: #fff;
+            color: var(--accent);
+            border-color: var(--accent);
         }
-
         .btn-secondary:hover {
-            background-color: #e5e5e5;
+            background: var(--accent);
+            color: #fff;
         }
 
-        /* 右側預覽區 */
+        /* 排版輔助 */
+        .settings-row { display: flex; gap: 12px; }
+        .input-group { flex: 1; display: flex; flex-direction: column; }
+
+        /* ===================== 右側：預覽區 ===================== */
         .preview-panel {
             flex: 1;
             padding: 40px;
+            background-color: #fcfaf2; /* 網站裡的淺米色背景 */
+            background-image: 
+                radial-gradient(var(--frame) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: 0 0;
+            opacity: 1;
             overflow-y: auto;
             display: flex;
             flex-wrap: wrap;
             gap: 30px;
             align-content: flex-start;
             justify-content: center;
-            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-            background-size: 20px 20px;
-            transition: background-color 0.3s;
         }
 
-        /* 手機版適配 (RWD) */
-        @media screen and (max-width: 900px) {
-            body {
-                flex-direction: column;
-                height: auto;
-                overflow-y: auto; /* 允許垂直捲動 */
-                overflow-x: hidden;
-            }
-
-            .editor-panel {
-                width: 100%;
-                height: auto;
-                box-shadow: none;
-                border-bottom: 1px solid #ddd;
-                box-sizing: border-box;
-                padding: 20px;
-            }
-
-            .preview-panel {
-                width: 100%;
-                height: auto;
-                padding: 20px;
-                box-sizing: border-box;
-                /* 讓手機上預覽區背景也延伸 */
-                min-height: 500px; 
-            }
-
-            .card-preview {
-                /* 手機上稍微縮小預覽卡片以免超出螢幕 */
-                transform: scale(0.9);
-                transform-origin: top center;
-                margin-bottom: -20px; /* 修正縮放後的間距 */
-            }
+        @media(max-width:900px) {
+            .editor-panel { border-right: none; border-bottom: 1px solid rgba(51, 166, 184, 0.2); flex: none; height: auto; }
+            .preview-panel { min-height: 500px; }
         }
 
-        /* 卡片本體 */
+        /* ===================== 卡片本體 (預覽) ===================== */
         .card-preview {
             width: 360px;
-            background: var(--card-bg);
+            background: #fff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             padding: 33px 30px; 
@@ -250,437 +271,245 @@
             overflow: hidden; 
         }
 
-        /* 溢出警告樣式 */
-        .card-preview.overflow-warning {
-            border: 2px solid #ff4d4f;
-            box-shadow: 0 0 15px rgba(255, 77, 79, 0.3);
-        }
-
-        .warning-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #ff4d4f;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: none;
-        }
-
-        .card-preview.overflow-warning .warning-badge {
-            display: block;
-        }
-
         .card-preview:hover {
             transform: scale(1.02);
             box-shadow: 0 15px 35px rgba(0,0,0,0.12);
         }
 
-        /* 紋理層 */
+        /* 溢出警告 */
+        .card-preview.overflow-warning { border: 2px solid #ff4d4f; }
+        .warning-badge {
+            position: absolute; top: 10px; right: 10px;
+            background: #ff4d4f; color: white; padding: 4px 8px;
+            border-radius: 4px; font-size: 12px; font-weight: bold;
+            z-index: 10; display: none;
+        }
+        .card-preview.overflow-warning .warning-badge { display: block; }
+
+        /* 紋理與花邊 (維持原樣) */
         .texture-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            pointer-events: none;
-            opacity: 0.4;
-            mix-blend-mode: multiply;
-            z-index: 1;
+            position: absolute; inset: 0; pointer-events: none; opacity: 0.4;
+            mix-blend-mode: multiply; z-index: 1;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
         }
+        .card-preview.dark-mode .texture-overlay { mix-blend-mode: overlay; opacity: 0.15; }
 
-        .card-preview.dark-mode .texture-overlay {
-             mix-blend-mode: overlay;
-             opacity: 0.15;
-        }
-
-        /* 花邊裝飾樣式 */
+        /* 邊框樣式 */
         .border-none::after { display: none; }
         .border-simple::after {
-            content: ''; position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
-            border: 1px solid currentColor; opacity: 0.5; pointer-events: none; z-index: 2;
+            content: ''; position: absolute; inset: 15px; border: 1px solid currentColor; opacity: 0.5; pointer-events: none; z-index: 2;
         }
         .border-double::after {
-            content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
-            border: 3px double currentColor; opacity: 0.6; pointer-events: none; z-index: 2;
+            content: ''; position: absolute; inset: 12px; border: 3px double currentColor; opacity: 0.6; pointer-events: none; z-index: 2;
         }
         .border-corners::after {
-            content: ''; position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
-            border: 1px solid currentColor;
+            content: ''; position: absolute; inset: 15px; border: 1px solid currentColor;
             clip-path: polygon(0 20px, 0 0, 20px 0, calc(100% - 20px) 0, 100% 0, 100% 20px, 100% calc(100% - 20px), 100% 100%, calc(100% - 20px) 100%, 20px 100%, 0 100%, 0 calc(100% - 20px));
-            mask-image: linear-gradient(to right, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px)), linear-gradient(to bottom, black 20px, transparent 20px, transparent calc(100% - 20px), black calc(100% - 20px));
-            mask-composite: add;
             opacity: 0.6; pointer-events: none; z-index: 2;
         }
         .border-vintage::after {
-            content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 1px solid currentColor; outline: 1px solid currentColor; outline-offset: -4px;
+            content: ''; position: absolute; inset: 10px; border: 1px solid currentColor; outline: 1px solid currentColor; outline-offset: -4px;
             opacity: 0.4; pointer-events: none; z-index: 2;
         }
-        
-        /* 內文與 Markdown 樣式 */
+
+        /* 內文樣式 */
         .card-body, .render-body {
-            flex: 1;
-            color: inherit; 
-            overflow: hidden;
-            letter-spacing: 0.05em;
-            text-align: justify;
-            z-index: 3; 
-            position: relative;
-            padding: 10px; 
-            word-break: break-word;
+            flex: 1; color: inherit; overflow: hidden; letter-spacing: 0.05em; text-align: justify;
+            z-index: 3; position: relative; padding: 10px; word-break: break-word;
         }
-
-        /* 段落間距變數 */
-        .card-body p, .render-body p {
-            margin-top: 0;
-            margin-bottom: var(--para-spacing, 1em);
-            white-space: pre-wrap;
-        }
+        .card-body p, .render-body p { margin-top: 0; margin-bottom: var(--para-spacing, 1em); white-space: pre-wrap; }
+        .card-body p:last-child, .render-body p:last-child { margin-bottom: 0; }
         
-        .card-body p:last-child, .render-body p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* 標題樣式 */
-        .card-body h1, .render-body h1 { font-size: 1.4em; margin: 0.5em 0 0.3em; font-weight: 600; opacity: 0.9; }
-        .card-body h2, .render-body h2 { font-size: 1.25em; margin: 0.4em 0 0.25em; font-weight: 600; opacity: 0.85; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px;}
-        .card-body h3, .render-body h3 { font-size: 1.1em; margin: 0.3em 0 0.2em; font-weight: 600; opacity: 0.8; }
+        /* Markdown Styles (Match User Preference) */
+        .card-body h1, .render-body h1 { font-family: 'Noto Serif TC', serif; font-size: 1.4em; margin: 0.5em 0 0.3em; font-weight: 700; opacity: 0.9; }
+        .card-body blockquote, .render-body blockquote { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid currentColor; opacity: 0.7; font-style: italic; }
         
-        /* 列表樣式 */
-        .card-body ul, .render-body ul, .card-body ol, .render-body ol {
-            margin: 0.2em 0 0.8em;
-            padding-left: 1.5em;
-        }
-        .card-body li, .render-body li {
-            margin-bottom: 0.3em;
-        }
-
-        /* 引用樣式 */
-        .card-body blockquote, .render-body blockquote {
-            margin: 0.5em 0;
-            padding-left: 1em;
-            border-left: 3px solid currentColor;
-            opacity: 0.7;
-            font-style: italic;
-        }
-
-        /* 表格樣式 */
+        /* Table Style (Glassy) */
         .card-body table, .render-body table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 0.8em 0;
-            background: rgba(125, 125, 125, 0.08); 
-            border-radius: 8px;
-            overflow: hidden;
-            font-size: 0.9em;
+            width: 100%; border-collapse: separate; border-spacing: 0; margin: 0.8em 0;
+            background: rgba(125, 125, 125, 0.08); border-radius: 8px; overflow: hidden; font-size: 0.9em;
+        }
+        .card-body th, .render-body th { padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.03); }
+        .card-body td, .render-body td { padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+        .card-footer, .render-footer {
+            margin-top: 16px; padding-top: 12px; border-top: 1px solid currentColor; opacity: 0.6;
+            display: flex; justify-content: space-between; align-items: center; font-size: 11px;
+            font-family: 'Noto Sans TC', sans-serif; letter-spacing: 0.1em; z-index: 3; position: relative;
+            padding-left: 10px; padding-right: 10px; flex-shrink: 0;
         }
 
-        .card-preview.dark-mode table, .render-card.dark-mode table {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .card-body th, .render-body th {
-            padding: 8px 12px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            background: rgba(0,0,0,0.03);
-            opacity: 0.9;
-        }
-
-        .card-preview.dark-mode th, .render-card.dark-mode th {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
-        }
-
-        .card-body td, .render-body td {
-            padding: 8px 12px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            opacity: 0.85;
-        }
-        
-        .card-preview.dark-mode td, .render-card.dark-mode td {
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .card-body tr:last-child td, .render-body tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Code Block */
-        .card-body pre, .render-body pre {
-            background: rgba(0,0,0,0.05);
-            padding: 10px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: monospace;
-            font-size: 0.9em;
-        }
-        .card-preview.dark-mode pre, .render-card.dark-mode pre {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .card-footer {
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1px solid currentColor;
-            opacity: 0.6; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            font-family: 'Noto Sans TC', sans-serif;
-            letter-spacing: 0.1em;
-            z-index: 3;
-            position: relative;
-            padding-left: 10px;
-            padding-right: 10px;
-            flex-shrink: 0; 
-        }
-
-        .page-number {
-            font-variant-numeric: tabular-nums;
-            font-weight: bold;
-        }
-
-        /* 隱藏的渲染容器 */
-        #render-container {
-            position: fixed;
-            left: -9999px;
-            top: 0;
-        }
-
+        /* Hidden Render Container */
+        #render-container { position: fixed; left: -9999px; top: 0; }
         .render-card {
-            width: 1080px; 
-            background: white;
-            padding: 100px 90px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .render-body {
-            flex: 1;
-            /* font-size 由 JS 決定 */
-            color: inherit;
-            letter-spacing: 0.02em;
-            text-align: justify;
-            z-index: 3;
-            position: relative;
-            padding: 20px;
-        }
-
-        .render-footer {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid currentColor;
-            opacity: 0.6;
-            display: flex;
-            justify-content: space-between;
-            font-size: 28px;
-            font-family: 'Noto Sans TC', sans-serif;
-            z-index: 3;
-            position: relative;
-            padding-left: 20px;
-            padding-right: 20px;
-            flex-shrink: 0;
+            width: 1080px; background: white; padding: 100px 90px; box-sizing: border-box;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
         
         /* 渲染時的邊框調整 */
-        .render-card.border-simple::after { top: 45px; left: 45px; right: 45px; bottom: 45px; border-width: 3px; }
-        .render-card.border-double::after { top: 36px; left: 36px; right: 36px; bottom: 36px; border-width: 9px; }
-        .render-card.border-corners::after { top: 45px; left: 45px; right: 45px; bottom: 45px; border-width: 3px; 
-             mask-image: linear-gradient(to right, black 60px, transparent 60px, transparent calc(100% - 60px), black calc(100% - 60px)),
-                        linear-gradient(to bottom, black 60px, transparent 60px, transparent calc(100% - 60px), black calc(100% - 60px));
-        }
-        .render-card.border-vintage::after { top: 30px; left: 30px; right: 30px; bottom: 30px; border-width: 3px; outline-width: 3px; outline-offset: -12px;}
+        .render-card.border-simple::after { inset: 45px; border-width: 3px; }
+        .render-card.border-double::after { inset: 36px; border-width: 9px; }
+        .render-card.border-corners::after { inset: 45px; border-width: 3px; }
+        .render-card.border-vintage::after { inset: 30px; border-width: 3px; outline-width: 3px; outline-offset: -12px;}
 
-
-        /* 載入遮罩 */
+        /* Loading */
         #loading {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            color: var(--accent-color);
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9);
+            display: flex; justify-content: center; align-items: center; z-index: 100;
+            display: none; flex-direction: column; gap: 15px; color: var(--frame);
         }
-
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width: 40px; height: 40px; border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--frame); border-radius: 50%; animation: spin 1s linear infinite;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <div class="editor-panel">
-        <h2>📑 文字圖卡機</h2>
-        
-        <!-- 顏色設定 -->
-        <div class="settings-row">
-            <div class="input-group" style="flex:1">
-                <label>卡片底色</label>
-                <div class="color-picker-wrapper">
-                    <select id="bgSelect" onchange="syncColor('bg')"></select>
-                    <input type="color" id="bgColor" value="#FFFFFB" onchange="syncSelect('bg')">
-                </div>
-            </div>
-        </div>
+    <div class="page-bg"></div>
 
-        <div class="settings-row">
-            <div class="input-group" style="flex:1">
-                <label>文字顏色</label>
-                <div class="color-picker-wrapper">
-                    <select id="textSelect" onchange="syncColor('text')"></select>
-                    <input type="color" id="textColor" value="#1C1C1C" onchange="syncSelect('text')">
+    <div class="app-container">
+        <!-- 左側編輯區 -->
+        <div class="editor-panel">
+            <h2>📜 文字圖卡機</h2>
+            
+            <div class="settings-row">
+                <div class="input-group" style="flex:1">
+                    <label>卡片底色</label>
+                    <div class="color-picker-wrapper">
+                        <select id="bgSelect" onchange="syncColor('bg')"></select>
+                        <input type="color" id="bgColor" value="#FFFFFB" onchange="syncSelect('bg')">
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 紋理與花邊 -->
-        <div class="input-group">
-            <div class="settings-row" style="align-items: center;">
-                 <div class="checkbox-group" style="flex:1">
-                    <input type="checkbox" id="useTexture" onchange="generatePreview()"> 
-                    <label for="useTexture" style="cursor:pointer; font-weight:normal; color:#333;">啟用紙張紋理</label>
+
+            <div class="settings-row">
+                <div class="input-group" style="flex:1">
+                    <label>文字顏色</label>
+                    <div class="color-picker-wrapper">
+                        <select id="textSelect" onchange="syncColor('text')"></select>
+                        <input type="color" id="textColor" value="#1C1C1C" onchange="syncSelect('text')">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div class="settings-row" style="align-items: center;">
+                     <div class="checkbox-group" style="flex:1">
+                        <input type="checkbox" id="useTexture" onchange="generatePreview()"> 
+                        <label for="useTexture" style="cursor:pointer; font-weight:500;">紙張紋理</label>
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <select id="borderStyle" onchange="generatePreview()">
+                            <option value="border-none">無邊框</option>
+                            <option value="border-simple">細線框</option>
+                            <option value="border-double">雙線框</option>
+                            <option value="border-corners">四角裝飾</option>
+                            <option value="border-vintage">古典花邊</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-row">
+                <div class="input-group" style="flex:1">
+                    <label>字型風格</label>
+                    <select id="fontStyle" onchange="generatePreview()">
+                        <option value="'Noto Serif TC', serif" selected>文學明體</option>
+                        <option value="'Noto Sans TC', sans-serif">現代黑體</option>
+                        <option value="'KaiTi', 'BiauKai', 'DFKai-SB', serif">古典楷體</option>
+                        <option value="'Ma Shan Zheng', cursive">書法手寫</option>
+                        <option value="'ZCOOL XiaoWei', serif">人文宋體</option>
+                    </select>
                 </div>
                 <div class="input-group" style="flex:1">
-                    <select id="borderStyle" onchange="generatePreview()">
-                        <option value="border-none">無邊框</option>
-                        <option value="border-simple">細線框</option>
-                        <option value="border-double">雙線框</option>
-                        <option value="border-corners">四角裝飾</option>
-                        <option value="border-vintage">古典花邊</option>
+                    <label>行距</label>
+                    <input type="range" id="lineHeight" min="1.2" max="2.4" step="0.1" value="1.6" oninput="generatePreview()">
+                </div>
+            </div>
+            
+             <div class="settings-row">
+                 <div class="input-group" style="flex:1">
+                    <label>字體大小</label>
+                    <input type="range" id="fontSizeScale" min="0.8" max="1.5" step="0.05" value="1.0" oninput="generatePreview()">
+                </div>
+                <div class="input-group" style="flex:1">
+                    <label>段落間距</label>
+                    <input type="range" id="paraSpacing" min="0" max="2" step="0.2" value="0.8" oninput="generatePreview()">
+                </div>
+            </div>
+
+             <div class="settings-row">
+                <div class="input-group" style="flex:1">
+                    <label>單頁字數</label>
+                    <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
+                </div>
+                <div class="input-group" style="flex:1.5">
+                    <label>圖片尺寸</label>
+                    <select id="aspectRatio" onchange="generatePreview()">
+                        <option value="4:5" selected>Threads (4:5)</option>
+                        <option value="9:16">Story (9:16)</option>
+                        <option value="1:2">Long (1:2)</option>
                     </select>
                 </div>
             </div>
-        </div>
 
-        <!-- 字型與行距 -->
-        <div class="settings-row">
-            <div class="input-group" style="flex:1">
-                <label>字型風格</label>
-                <select id="fontStyle" onchange="generatePreview()">
-                    <option value="'Noto Serif TC', serif" selected>文學明體</option>
-                    <option value="'Noto Sans TC', sans-serif">現代黑體</option>
-                    <option value="'KaiTi', 'BiauKai', 'DFKai-SB', serif">古典楷體</option>
-                    <option value="'Ma Shan Zheng', cursive">書法手寫</option>
-                    <option value="'ZCOOL XiaoWei', serif">人文宋體</option>
-                </select>
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>行距</label>
-                <input type="range" id="lineHeight" min="1.2" max="2.4" step="0.1" value="1.6" oninput="generatePreview()">
-            </div>
-        </div>
-        
-        <!-- 字體大小與段落間距 -->
-         <div class="settings-row">
-             <div class="input-group" style="flex:1">
-                <label>字體大小</label>
-                <input type="range" id="fontSizeScale" min="0.8" max="1.5" step="0.05" value="1.0" oninput="generatePreview()">
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>段落間距</label>
-                <input type="range" id="paraSpacing" min="0" max="2" step="0.2" value="0.8" oninput="generatePreview()">
-            </div>
-        </div>
-
-        <!-- 單頁字數與尺寸 -->
-         <div class="settings-row">
-            <div class="input-group" style="flex:1">
-                <label>單頁字數</label>
-                <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
-            </div>
-            <div class="input-group" style="flex:1.5">
-                <label>圖片尺寸</label>
-                <select id="aspectRatio" onchange="generatePreview()">
-                    <option value="4:5" selected>Threads (4:5)</option>
-                    <option value="9:16">Story (9:16)</option>
-                    <option value="1:2">Long (1:2)</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- 檔案設定 -->
-        <div class="settings-row">
-            <div class="input-group" style="flex:1.5">
-                <label>檔案名稱 (英文/數字)</label>
-                <input type="text" id="fileNamePrefix" value="threads_story" placeholder="存檔檔名">
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>格式</label>
-                <select id="fileFormat">
-                    <option value="png">PNG</option>
-                    <option value="jpeg">JPG</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>頁尾署名</label>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="text" id="footerText" value="燁 & 夏" style="flex:1;">
-                <div class="checkbox-group" style="margin-top:0;">
-                    <input type="checkbox" id="showFooter" checked onchange="generatePreview()">
-                    <label for="showFooter" style="cursor:pointer; white-space:nowrap;">顯示</label>
+            <div class="settings-row">
+                <div class="input-group" style="flex:1.5">
+                    <label>檔案名稱</label>
+                    <input type="text" id="fileNamePrefix" value="threads_story" placeholder="存檔檔名">
+                </div>
+                <div class="input-group" style="flex:1">
+                    <label>格式</label>
+                    <select id="fileFormat">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPG</option>
+                    </select>
                 </div>
             </div>
+
+            <div class="input-group">
+                <label>頁尾署名</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="footerText" value="燁 & 夏" style="flex:1;">
+                    <div class="checkbox-group" style="margin-top:0;">
+                        <input type="checkbox" id="showFooter" checked onchange="generatePreview()">
+                        <label for="showFooter" style="cursor:pointer; white-space:nowrap; font-weight:500;">顯示</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
+                <label>輸入內容 (支援 Markdown)</label>
+                <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="generatePreview()">
+                    🔄 更新預覽
+                </button>
+                <button class="btn btn-secondary" onclick="downloadAll()">
+                    📦 打包下載 (.zip)
+                </button>
+            </div>
         </div>
 
-        <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
-            <label>輸入內容 (支援 Markdown!)</label>
-            <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
-        </div>
-
-        <div class="controls">
-            <button class="btn btn-primary" onclick="generatePreview()">
-                🔄 更新預覽
-            </button>
-            <button class="btn btn-secondary" onclick="downloadAll()">
-                📦 打包下載 (.zip)
-            </button>
-        </div>
+        <!-- 右側預覽區 -->
+        <div class="preview-panel" id="previewPanel"></div>
     </div>
 
-    <div class="preview-panel" id="previewPanel"></div>
+    <!-- 隱藏渲染區 & Loading -->
     <div id="render-container"></div>
-    
     <div id="loading">
         <div class="spinner"></div>
         <div id="loadingText">正在生成圖片...</div>
     </div>
 
     <script>
-        // 設定 marked 選項
-        marked.setOptions({
-            breaks: true, // 允許換行
-            gfm: true     // 啟用 GitHub 風格 Markdown (支援表格)
-        });
+        marked.setOptions({ breaks: true, gfm: true });
 
-        // 日本傳統色數據
         const NIPPON_COLORS = [
             { name: "胡粉 (Gofun) - 潔白", hex: "#FFFFFB" },
             { name: "生成 (Kinari) - 棉麻", hex: "#FCD575" },
@@ -726,11 +555,11 @@
         };
 
         const BASE_FONT_SIZE_RENDER = 34;
-        const BASE_FONT_SIZE_PREVIEW = 11.2; // 微調預覽字體，使其更接近渲染效果，避免預覽顯示溢出但渲染未溢出
+        const BASE_FONT_SIZE_PREVIEW = 11.2;
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在手機也可以正常使用囉！\n\n如果是用手機打開，預覽區會在下方。\n\n另外，我也調整了表格預覽的誤差，現在看到的樣子應該會更準確了。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在介面已經完全換上了妳網站的風格。\n\n藍綠色的背景、雙線邊框、還有那優雅的蕾絲花邊。\n\n希望這個「書房」能讓妳在創作的時候，感到更放鬆、更自在。";
             generatePreview();
         };
 
@@ -780,18 +609,13 @@
         function parseText(text, limit) {
             const rawPages = text.split('===');
             let finalPages = [];
-
             rawPages.forEach(page => {
                 let content = page.trim();
                 if (!content) return;
-
                 if (content.length > limit * 1.5) { 
-                    // 嘗試用雙換行（區塊）來切分，避免切斷 Markdown 結構
                     let paragraphs = content.split(/\n\s*\n/);
                     let currentChunk = "";
-                    
                     paragraphs.forEach(para => {
-                        // 補回雙換行
                         let p = para + "\n\n";
                         if ((currentChunk.length + p.length) > limit) {
                             if(currentChunk) finalPages.push(currentChunk.trim());
@@ -824,7 +648,6 @@
             const showFooter = document.getElementById('showFooter').checked;
             const charLimit = parseInt(document.getElementById('charLimit').value) || 500;
             const ratioKey = document.getElementById('aspectRatio').value;
-            
             const bgColor = document.getElementById('bgColor').value;
             const textColor = document.getElementById('textColor').value;
             const fontStyle = document.getElementById('fontStyle').value;
@@ -843,7 +666,7 @@
             const ratioConfig = RATIOS[ratioKey];
 
             if (pages.length === 0) {
-                previewPanel.innerHTML = '<div style="color:#999; margin-top:50px;">請在左側輸入文字...</div>';
+                previewPanel.innerHTML = '<div style="color:#888; margin-top:50px;">請在左側輸入文字...</div>';
                 return;
             }
 
@@ -855,15 +678,10 @@
                 card.style.height = ratioConfig.previewH + 'px';
                 card.style.backgroundColor = bgColor;
                 card.style.color = textColor;
-                
-                // 設定 CSS 變數供 Markdown 樣式使用
                 card.style.setProperty('--para-spacing', paraSpacing + 'em');
                 
                 let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
-                
                 const fontSize = BASE_FONT_SIZE_PREVIEW * fontScale;
-                
-                // 使用 marked 解析 Markdown
                 const parsedBody = marked.parse(content);
 
                 const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${parsedBody}</div>`;
@@ -900,7 +718,6 @@
             const showFooter = document.getElementById('showFooter').checked;
             const charLimit = parseInt(document.getElementById('charLimit').value) || 500;
             const ratioKey = document.getElementById('aspectRatio').value;
-            
             const bgColor = document.getElementById('bgColor').value;
             const textColor = document.getElementById('textColor').value;
             const fontStyle = document.getElementById('fontStyle').value;
@@ -911,7 +728,7 @@
             const paraSpacing = parseFloat(document.getElementById('paraSpacing').value);
             
             const fileNamePrefix = document.getElementById('fileNamePrefix').value || 'threads_story';
-            const fileFormat = document.getElementById('fileFormat').value; // png or jpeg
+            const fileFormat = document.getElementById('fileFormat').value; 
 
             const isDark = isDarkColor(bgColor);
             const pages = parseText(text, charLimit);
@@ -924,8 +741,6 @@
             container.innerHTML = ''; 
 
             const ratioConfig = RATIOS[ratioKey];
-            
-            // 初始化 JSZip
             const zip = new JSZip();
             const imgFolder = zip.folder(fileNamePrefix);
 
@@ -941,12 +756,9 @@
                     renderCard.style.backgroundColor = bgColor;
                     renderCard.style.color = textColor;
                     renderCard.style.fontFamily = fontStyle; 
-                    
-                    // 設定 CSS 變數
                     renderCard.style.setProperty('--para-spacing', paraSpacing + 'em');
 
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
-                    
                     const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
                     const parsedBody = marked.parse(pages[i]);
                     
@@ -971,7 +783,6 @@
 
                     await document.fonts.ready;
                     
-                    // 根據選擇格式設定參數
                     let mimeType = 'image/png';
                     if (fileFormat === 'jpeg') mimeType = 'image/jpeg';
 
@@ -983,20 +794,17 @@
                         height: ratioConfig.h
                     });
 
-                    // 取得 Base64 並移除前綴
-                    const dataUrl = canvas.toDataURL(mimeType, 0.9); // 0.9 quality for jpg
+                    const dataUrl = canvas.toDataURL(mimeType, 0.9);
                     const base64Data = dataUrl.split(',')[1];
                     
-                    // 加入 Zip
                     const extension = fileFormat === 'jpeg' ? 'jpg' : 'png';
                     const fileName = `${fileNamePrefix}_${(i + 1).toString().padStart(2, '0')}.${extension}`;
                     imgFolder.file(fileName, base64Data, {base64: true});
 
-                    await new Promise(r => setTimeout(r, 200)); // 稍微縮短等待時間
+                    await new Promise(r => setTimeout(r, 200)); 
                     container.removeChild(renderCard);
                 }
                 
-                // 生成 Zip 並下載
                 document.getElementById('loadingText').innerText = `正在壓縮打包...`;
                 const content = await zip.generateAsync({type: "blob"});
                 saveAs(content, `${fileNamePrefix}.zip`);
