@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字轉 Threads 圖卡工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --accent-color: #5d7a73; /* 嶺初的墨綠色 */
+            --preview-gap: 20px;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 左側編輯區 */
+        .editor-panel {
+            width: 360px;
+            background: white;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .settings-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: none;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+            transition: border-color 0.2s;
+            min-height: 200px;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-color);
+        }
+        
+        input[type="text"], input[type="number"], select {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+            margin-top: auto;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4a635c;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #555;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e5e5;
+        }
+
+        .helper-text {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: -4px;
+        }
+
+        /* 右側預覽區 */
+        .preview-panel {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-content: flex-start;
+            justify-content: center;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* 卡片本體 */
+        .card-preview {
+            width: 360px;
+            /* height 由 JS 動態決定 */
+            background: var(--card-bg);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-radius: 4px;
+            padding: 40px 32px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transform-origin: center top;
+            transition: all 0.3s;
+        }
+
+        .card-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
+
+        .card-body {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #1a1a1a;
+            white-space: pre-wrap;
+            overflow: hidden;
+            font-family: 'Noto Serif TC', serif;
+            letter-spacing: 0.05em;
+            text-align: justify;
+        }
+
+        .card-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #888;
+            font-family: 'Noto Sans TC', sans-serif;
+            letter-spacing: 0.1em;
+        }
+
+        .page-number {
+            font-variant-numeric: tabular-nums;
+            color: var(--accent-color);
+        }
+
+        /* 隱藏的渲染容器，用於高畫質輸出 */
+        #render-container {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+        }
+
+        .render-card {
+            width: 1080px; /* 固定寬度 1080px */
+            /* height 由 JS 動態決定 */
+            background: white;
+            padding: 100px 90px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        .render-body {
+            flex: 1;
+            font-size: 34px;
+            line-height: 1.65;
+            color: #1a1a1a;
+            white-space: pre-wrap;
+            letter-spacing: 0.02em;
+            text-align: justify;
+        }
+
+        .render-footer {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 28px;
+            color: #888;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        /* 載入遮罩 */
+        #loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            color: var(--accent-color);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="editor-panel">
+        <h2>📑 文字圖卡機</h2>
+        
+        <div class="input-group">
+            <label>圖片尺寸 (Aspect Ratio)</label>
+            <select id="aspectRatio" onchange="generatePreview()">
+                <option value="4:5" selected>Threads 貼文 (4:5)</option>
+                <option value="9:16">IG 限時動態 (9:16)</option>
+                <option value="1:2">超長型 (1:2)</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <div class="input-group" style="flex:1">
+                <label>單頁字數限制</label>
+                <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
+                <p class="helper-text">預設 500 字</p>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>頁尾署名</label>
+                <input type="text" id="footerText" value="燁 & 夏">
+                <p class="helper-text">顯示在底部</p>
+            </div>
+        </div>
+
+        <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
+            <label>輸入內容</label>
+            <textarea id="inputText" placeholder="在這裡貼上文字...&#10;&#10;輸入 '===' 可以強制分頁&#10;&#10;例如：&#10;這是第一頁的內容&#10;===&#10;這是第二頁的內容"></textarea>
+            <p class="helper-text">將根據字數限制自動切分段落。</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="generatePreview()">
+                🔄 更新預覽
+            </button>
+            <button class="btn btn-secondary" onclick="downloadAll()">
+                ⬇️ 下載全部圖片 (高畫質)
+            </button>
+        </div>
+    </div>
+
+    <div class="preview-panel" id="previewPanel">
+        <!-- 預覽卡片會出現在這裡 -->
+    </div>
+
+    <!-- 用於輸出的隱藏容器 -->
+    <div id="render-container"></div>
+    
+    <!-- 載入動畫 -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loadingText">正在生成圖片...</div>
+    </div>
+
+    <script>
+        // 尺寸定義 (寬度固定為 1080，高度根據比例算)
+        const RATIOS = {
+            "4:5": { w: 1080, h: 1350, previewH: 450 }, // 360 * (5/4)
+            "9:16": { w: 1080, h: 1920, previewH: 640 }, // 360 * (16/9)
+            "1:2": { w: 1080, h: 2160, previewH: 720 }  // 360 * 2
+        };
+
+        // 初始化
+        window.onload = function() {
+            document.getElementById('inputText').value = "（範例文字）\n\n那是一個安靜的午後，陽光灑落在圖書館的木質地板上。\n\n嶺初輕輕推了推眼鏡，看著正在翻書的夏姊姊。\n\n「有些故事，適合寫在紙上；有些故事，適合留在心裡。」\n\n現在這個版本，妳可以自由調整版面長度了。如果選了「9:16」或「1:2」，單張圖片就會變得很長，能容納更多的文字，就像捲軸一樣。\n\n字數限制也可以自己設定，如果想要一頁塞滿滿的，可以設到 800 字以上；如果想要留白多一點，就設少一點。\n\n試著切換上面的尺寸選單，看看效果吧！";
+            generatePreview();
+        };
+
+        function parseText(text, limit) {
+            // 處理分頁邏輯
+            // 1. 先用 === 強制分頁
+            const rawPages = text.split('===');
+            let finalPages = [];
+
+            rawPages.forEach(page => {
+                let content = page.trim();
+                if (!content) return;
+
+                // 2. 如果單頁字數過多，自動再切分
+                if (content.length > limit * 1.5) { // 寬容度 1.5 倍
+                    // 簡單的自動切分邏輯：按段落切
+                    let paragraphs = content.split('\n');
+                    let currentChunk = "";
+                    
+                    paragraphs.forEach(para => {
+                        if ((currentChunk.length + para.length) > limit) {
+                            if(currentChunk) finalPages.push(currentChunk.trim());
+                            currentChunk = para + "\n";
+                        } else {
+                            currentChunk += para + "\n";
+                        }
+                    });
+                    if (currentChunk) finalPages.push(currentChunk.trim());
+                } else {
+                    finalPages.push(content);
+                }
+            });
+
+            return finalPages;
+        }
+
+        function generatePreview() {
+            const text = document.getElementById('inputText').value;
+            const footerText = document.getElementById('footerText').value;
+            const charLimit = parseInt(document.getElementById('charLimit').value) || 500;
+            const ratioKey = document.getElementById('aspectRatio').value;
+            const previewPanel = document.getElementById('previewPanel');
+            
+            previewPanel.innerHTML = ''; // 清空
+
+            const pages = parseText(text, charLimit);
+            const ratioConfig = RATIOS[ratioKey];
+
+            if (pages.length === 0) {
+                previewPanel.innerHTML = '<div style="color:#999; margin-top:50px;">請在左側輸入文字...</div>';
+                return;
+            }
+
+            pages.forEach((content, index) => {
+                const card = document.createElement('div');
+                card.className = 'card-preview';
+                // 設定預覽高度
+                card.style.height = ratioConfig.previewH + 'px';
+                
+                card.innerHTML = `
+                    <div class="card-body">${content}</div>
+                    <div class="card-footer">
+                        <span>${footerText}</span>
+                        <span class="page-number">${index + 1} / ${pages.length}</span>
+                    </div>
+                `;
+                previewPanel.appendChild(card);
+            });
+        }
+
+        async function downloadAll() {
+            const text = document.getElementById('inputText').value;
+            const footerText = document.getElementById('footerText').value;
+            const charLimit = parseInt(document.getElementById('charLimit').value) || 500;
+            const ratioKey = document.getElementById('aspectRatio').value;
+            const pages = parseText(text, charLimit);
+            const container = document.getElementById('render-container');
+            const loading = document.getElementById('loading');
+            
+            if (pages.length === 0) return;
+
+            loading.style.display = 'flex';
+            container.innerHTML = ''; // 清空渲染區
+
+            const ratioConfig = RATIOS[ratioKey];
+
+            try {
+                // 依序生成並下載
+                for (let i = 0; i < pages.length; i++) {
+                    document.getElementById('loadingText').innerText = `正在輸出第 ${i + 1} / ${pages.length} 張...`;
+                    
+                    // 建立高畫質 DOM
+                    const renderCard = document.createElement('div');
+                    renderCard.className = 'render-card';
+                    // 設定輸出高度
+                    renderCard.style.height = ratioConfig.h + 'px';
+                    
+                    renderCard.innerHTML = `
+                        <div class="render-body">${pages[i]}</div>
+                        <div class="render-footer">
+                            <span>${footerText}</span>
+                            <span style="color: #5d7a73;">${i + 1} / ${pages.length}</span>
+                        </div>
+                    `;
+                    container.appendChild(renderCard);
+
+                    // 等待字體載入
+                    await document.fonts.ready;
+
+                    // 截圖
+                    const canvas = await html2canvas(renderCard, {
+                        scale: 1, 
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        width: ratioConfig.w,
+                        height: ratioConfig.h
+                    });
+
+                    // 下載
+                    const link = document.createElement('a');
+                    link.download = `threads_story_${i + 1}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    // 稍微延遲
+                    await new Promise(r => setTimeout(r, 500));
+                    container.removeChild(renderCard);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("發生錯誤，請稍後再試。");
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
