@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.18</title>
+    <title>故事印刷所 v2.19</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -137,8 +137,8 @@
             background: #fff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
-            /* 修正：預覽 padding 改為 20px */
-            padding: 20px;
+            /* 修正：預覽 padding 改為 30px */
+            padding: 30px;
             box-sizing: border-box;
             display: flex; flex-direction: column; position: relative;
             transform-origin: center top; transition: all 0.3s; overflow: hidden; 
@@ -233,7 +233,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.18</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.19</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -383,7 +383,7 @@
             { name: "琥珀 (Kohaku) - 琥珀", hex: "#CA6924" },
             { name: "山吹 (Yamabuki) - 金黃", hex: "#F8B500" }, 
             { name: "杏色 (Anzu) - 杏桃", hex: "#F7B977" }, 
-            { name: "刈安 (Kariyasu) - 芒草", hex: "#F5E56B" },
+            { name: "刈安 (Kariyasu) -芒草", hex: "#F5E56B" },
             { name: "萌黃 (Moegi) - 嫩芽", hex: "#A5D63F" }, 
             { name: "鶯色 (Uguisu) - 鶯綠", hex: "#928C36" }, 
             { name: "利休茶 (Rikyucha) - 抹茶", hex: "#647462" },
@@ -413,7 +413,7 @@
         // 更新字數建議
         const RATIOS = {
             "4:5": { w: 1080, h: 1350, previewH: 450, recommendedChars: 250 }, 
-            "9:16": { w: 1080, h: 1920, previewH: 640, recommendedChars: 300 }, 
+            "9:16": { w: 1080, h: 1920, previewH: 640, recommendedChars: 400 }, 
             "1:2": { w: 1080, h: 2160, previewH: 720, recommendedChars: 450 }  
         };
 
