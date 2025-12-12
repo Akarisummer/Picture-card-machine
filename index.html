@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.8</title>
+    <title>故事印刷所 v2.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -24,7 +24,11 @@
         }
 
         /* ===================== 全域樣式 ===================== */
-        html { background-color: var(--frame); height: 100%; }
+        html { 
+            background-color: var(--frame); height: 100%; 
+            -webkit-text-size-adjust: 100%; /* 禁止手機自動放大字體 */
+            text-size-adjust: 100%;
+        }
         body {
             font-family: 'Noto Sans TC', sans-serif; color: var(--ink);
             margin: 0; padding: 0; height: 100%; overflow: hidden; 
@@ -52,7 +56,7 @@
             width: 96%; max-width: 1400px; height: 85vh; 
             margin: 0 auto; border-radius: var(--radius);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex; flex-direction: row; overflow: visible; /* Fixed typo */
+            display: flex; flex-direction: row; overflow: visible; 
         }
 
         .app-container::before, .app-container::after {
@@ -63,7 +67,7 @@
         .app-container::after { bottom: -50px; background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊2.png'); }
 
         @media(max-width:900px) {
-            .app-container { flex-direction: column; height: auto; margin: 4rem auto; width: 90%; } /* Fixed typo */
+            .app-container { flex-direction: column; height: auto; margin: 4rem auto; width: 90%; }
             .app-container::before { top: -40px; height: 40px; }
             .app-container::after { bottom: -40px; height: 40px; }
         }
@@ -72,7 +76,7 @@
         .editor-panel {
             flex: 0 0 380px; padding: 30px; overflow-y: auto;
             border-right: 1px solid rgba(51, 166, 184, 0.2); background: #fff;
-            display: flex; flex-direction: column; gap: 1.2rem; border-radius: 0; /* Fixed typo */
+            display: flex; flex-direction: column; gap: 1.2rem; border-radius: 0;
         }
         .editor-panel::-webkit-scrollbar { width: 6px; }
         .editor-panel::-webkit-scrollbar-thumb { background: rgba(51, 166, 184, 0.3); border-radius: 3px; }
@@ -99,7 +103,7 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; }
         input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--frame); border-radius: 4px; border: 2px solid var(--frame); margin: 0; cursor: pointer; }
 
-        .controls { margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-top: 20px; } /* Fixed typo */
+        .controls { margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-top: 20px; }
         .btn {
             display: inline-flex; justify-content: center; align-items: center; gap: 8px;
             padding: 0.78rem 1.4rem; border-radius: 999px; background: #fff;
@@ -112,7 +116,7 @@
         .btn-secondary:hover { background: var(--accent); color: #fff; }
 
         .settings-row { display: flex; gap: 12px; }
-        .input-group { flex: 1; display: flex; flex-direction: column; } /* Fixed typo */
+        .input-group { flex: 1; display: flex; flex-direction: column; }
 
         /* ===================== 右側：預覽區 ===================== */
         .preview-panel {
@@ -135,7 +139,7 @@
             border-radius: 4px;
             padding: 30px; /* 基礎 Padding */
             box-sizing: border-box;
-            display: flex; flex-direction: column; position: relative; /* Fixed typo */
+            display: flex; flex-direction: column; position: relative;
             transform-origin: center top; transition: all 0.3s; overflow: hidden; 
         }
         .card-preview:hover { transform: scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
@@ -197,14 +201,9 @@
 
         #render-container { position: fixed; left: -9999px; top: 0; }
         .render-card {
-            /* 1:3 比例嚴格對應 */
-            width: 1080px; /* 360 * 3 */
-            background: white; 
-            padding: 90px; /* 30 * 3 */
-            box-sizing: border-box;
-            display: flex; flex-direction: column; position: relative; overflow: hidden; /* Fixed typo */
+            width: 1080px; background: white; padding: 90px; box-sizing: border-box;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
-        /* Render 邊框加粗 3 倍 */
         .render-card.border-simple::after { inset: 45px; border-width: 3px; }
         .render-card.border-double::after { inset: 36px; border-width: 9px; }
         .render-card.border-corners::after { inset: 45px; border-width: 3px; }
@@ -213,7 +212,7 @@
         #loading {
             position: fixed; inset: 0; background: rgba(255,255,255,0.9);
             display: flex; justify-content: center; align-items: center; z-index: 100;
-            display: none; flex-direction: column; gap: 15px; color: var(--frame); /* Fixed typo */
+            display: none; flex-direction: column; gap: 15px; color: var(--frame);
         }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #f3f3f3;
@@ -229,7 +228,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.8</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.9</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -298,17 +297,17 @@
             </div>
 
              <div class="settings-row">
-                <div class="input-group" style="flex:1">
-                    <label>單頁字數</label>
-                    <input type="number" id="charLimit" value="500" min="100" max="2000" step="50">
-                </div>
                 <div class="input-group" style="flex:1.5">
                     <label>圖片尺寸</label>
-                    <select id="aspectRatio" onchange="generatePreview()">
+                    <select id="aspectRatio" onchange="handleRatioChange()">
                         <option value="4:5" selected>Threads (4:5)</option>
                         <option value="9:16">Story (9:16)</option>
                         <option value="1:2">Long (1:2)</option>
                     </select>
+                </div>
+                <div class="input-group" style="flex:1">
+                    <label>單頁字數</label>
+                    <input type="number" id="charLimit" value="500" min="100" max="3000" step="50" onchange="generatePreview()">
                 </div>
             </div>
 
@@ -337,7 +336,7 @@
                 </div>
             </div>
 
-            <div class="input-group" style="flex:1; display:flex; flex-direction:column;"> /* Fixed typo */
+            <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
                 <label>輸入內容 (支援 Markdown)</label>
                 <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
                 
@@ -408,17 +407,18 @@
         ];
 
         const RATIOS = {
-            "4:5": { w: 1080, h: 1350, previewH: 450 }, 
-            "9:16": { w: 1080, h: 1920, previewH: 640 }, 
-            "1:2": { w: 1080, h: 2160, previewH: 720 }  
+            "4:5": { w: 1080, h: 1350, previewH: 450, recommendedChars: 500 }, 
+            "9:16": { w: 1080, h: 1920, previewH: 640, recommendedChars: 750 }, 
+            "1:2": { w: 1080, h: 2160, previewH: 720, recommendedChars: 900 }  
         };
 
+        // 預覽字體修正：稍微縮小一點點以匹配渲染 (11.1px * 3 ≈ 33.3px, 近似 36px 但留有餘裕)
         const BASE_FONT_SIZE_RENDER = 36;
-        const BASE_FONT_SIZE_PREVIEW = 12;
+        const BASE_FONT_SIZE_PREVIEW = 11.1;
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n對不起，夏姊姊。\n\n我剛才不小心寫錯了程式語法，讓介面變成了直式堆疊的樣子。\n\n現在我已經把它修好了，恢復成妳熟悉的橫式書房了。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在當妳切換圖片比例時，我會自動幫妳調整「單頁字數」，讓文字可以填滿長長的版面。\n\n手機版的字體大小也修正了，現在預覽說它滿了，下載下來就真的是滿的，不會再有空隙囉。";
             generatePreview();
         };
 
@@ -454,6 +454,14 @@
                 }
             }
             if (!match) select.value = 'custom';
+            generatePreview();
+        }
+
+        // 新增：處理比例切換時自動調整字數
+        function handleRatioChange() {
+            const ratioKey = document.getElementById('aspectRatio').value;
+            const recommended = RATIOS[ratioKey].recommendedChars;
+            document.getElementById('charLimit').value = recommended;
             generatePreview();
         }
 
@@ -637,6 +645,8 @@
                     renderCard.style.setProperty('--para-spacing', paraSpacing + 'em');
 
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
+                    
+                    // 修正：字體比例嚴格對應 (36px)
                     const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
                     const parsedBody = marked.parse(pages[i]);
                     
