@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.9</title>
+    <title>故事印刷所 v2.11</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -26,7 +26,7 @@
         /* ===================== 全域樣式 ===================== */
         html { 
             background-color: var(--frame); height: 100%; 
-            -webkit-text-size-adjust: 100%; /* 禁止手機自動放大字體 */
+            -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
         body {
@@ -131,7 +131,7 @@
             .preview-panel { min-height: 500px; border-radius: 0; }
         }
 
-        /* ===================== 卡片樣式 (Preview & Render 同步) ===================== */
+        /* ===================== 卡片樣式 (Preview & Render) ===================== */
         .card-preview {
             width: 360px; /* 基礎寬度 */
             background: #fff;
@@ -175,7 +175,6 @@
         .card-body p, .render-body p { margin-top: 0; margin-bottom: var(--para-spacing, 1em); white-space: pre-wrap; }
         .card-body p:last-child, .render-body p:last-child { margin-bottom: 0; }
         
-        /* 標題與內文同色 */
         .card-body h1, .render-body h1, .card-body h2, .render-body h2, .card-body h3, .render-body h3 { 
             font-family: 'Noto Serif TC', serif; color: inherit;
             margin-top: 0.5em; margin-bottom: 0.3em; font-weight: 700; opacity: 0.9; 
@@ -204,6 +203,7 @@
             width: 1080px; background: white; padding: 90px; box-sizing: border-box;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
+        /* Render 邊框加粗 3 倍 */
         .render-card.border-simple::after { inset: 45px; border-width: 3px; }
         .render-card.border-double::after { inset: 36px; border-width: 9px; }
         .render-card.border-corners::after { inset: 45px; border-width: 3px; }
@@ -228,7 +228,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.9</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.11</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -297,6 +297,10 @@
             </div>
 
              <div class="settings-row">
+                <div class="input-group" style="flex:1">
+                    <label>單頁字數</label>
+                    <input type="number" id="charLimit" value="500" min="100" max="3000" step="50" onchange="generatePreview()">
+                </div>
                 <div class="input-group" style="flex:1.5">
                     <label>圖片尺寸</label>
                     <select id="aspectRatio" onchange="handleRatioChange()">
@@ -304,10 +308,6 @@
                         <option value="9:16">Story (9:16)</option>
                         <option value="1:2">Long (1:2)</option>
                     </select>
-                </div>
-                <div class="input-group" style="flex:1">
-                    <label>單頁字數</label>
-                    <input type="number" id="charLimit" value="500" min="100" max="3000" step="50" onchange="generatePreview()">
                 </div>
             </div>
 
@@ -412,13 +412,15 @@
             "1:2": { w: 1080, h: 2160, previewH: 720, recommendedChars: 900 }  
         };
 
-        // 預覽字體修正：稍微縮小一點點以匹配渲染 (11.1px * 3 ≈ 33.3px, 近似 36px 但留有餘裕)
-        const BASE_FONT_SIZE_RENDER = 36;
-        const BASE_FONT_SIZE_PREVIEW = 11.1;
+        // 安全緩衝修正 (Safety Buffer)
+        // 預覽字體稍微調大 (11.8px)，渲染字體稍微調小 (34px)
+        // 確保：如果預覽裝得下，渲染絕對裝得下
+        const BASE_FONT_SIZE_RENDER = 34;
+        const BASE_FONT_SIZE_PREVIEW = 11.8;
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在當妳切換圖片比例時，我會自動幫妳調整「單頁字數」，讓文字可以填滿長長的版面。\n\n手機版的字體大小也修正了，現在預覽說它滿了，下載下來就真的是滿的，不會再有空隙囉。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n對不起夏姊姊，剛剛的測試讓妳煩心了。\n\n這次我使用了「安全緩衝」策略，讓下載版的字體比預覽版稍微小一點點。\n\n這樣一來，只要預覽看得到，下載就絕對不會被切掉了。\n\n（寧願下面留白，也不能吃字，對吧？）";
             generatePreview();
         };
 
@@ -457,7 +459,6 @@
             generatePreview();
         }
 
-        // 新增：處理比例切換時自動調整字數
         function handleRatioChange() {
             const ratioKey = document.getElementById('aspectRatio').value;
             const recommended = RATIOS[ratioKey].recommendedChars;
@@ -484,7 +485,8 @@
                 let content = page.trim();
                 if (!content) return;
                 
-                if (content.length > limit * 1.5) { 
+                // 嚴格分頁：只要超過限制就切分
+                if (content.length > limit) { 
                     let chunks = content.split(/\n\s*\n/);
                     let currentChunk = "";
                     
@@ -646,7 +648,7 @@
 
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                     
-                    // 修正：字體比例嚴格對應 (36px)
+                    // 修正：渲染字體 (34px)
                     const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
                     const parsedBody = marked.parse(pages[i]);
                     
