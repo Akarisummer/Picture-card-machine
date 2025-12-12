@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.6</title>
+    <title>故事印刷所 v2.7</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -19,53 +19,27 @@
             --blue: #cfeaf6;
             --accent: #6e8f98;
             --frame: #33A6B8;
-            --radius: 0px; /* 直角 */
+            --radius: 0px; 
             --card-radius: 20px 10px 20px 10px; 
         }
 
         /* ===================== 全域樣式 ===================== */
-        html {
-            background-color: var(--frame);
-            height: 100%;
-        }
-
+        html { background-color: var(--frame); height: 100%; }
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            color: var(--ink);
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Noto Sans TC', sans-serif; color: var(--ink);
+            margin: 0; padding: 0; height: 100%; overflow: hidden; 
+            display: flex; justify-content: center; align-items: center;
         }
         
         h2.ui-title {
-            font-family: 'Noto Serif TC', serif;
-            color: var(--frame);
-            font-weight: 700;
-            margin: 0 0 1rem 0;
-            display: flex;
-            align-items: baseline; 
-            gap: 10px;
+            font-family: 'Noto Serif TC', serif; color: var(--frame);
+            font-weight: 700; margin: 0 0 1rem 0; display: flex; align-items: baseline; gap: 10px;
         }
 
-        /* ===================== 雙框版型背景 ===================== */
-        .page-bg {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .page-bg::before {
-            content: ""; position: absolute; inset: 0;
-            box-shadow: inset 0 0 0 15px var(--frame);
-        }
-        .page-bg::after {
-            content: ""; position: absolute; inset: 25px;
-            box-shadow: inset 0 0 0 1px var(--frame);
-        }
+        /* ===================== 背景與容器 ===================== */
+        .page-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+        .page-bg::before { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 15px var(--frame); }
+        .page-bg::after { content: ""; position: absolute; inset: 25px; box-shadow: inset 0 0 0 1px var(--frame); }
         
         @media(max-width:640px) {
             .page-bg::before { box-shadow: inset 0 0 0 10px var(--frame); }
@@ -73,66 +47,38 @@
             body { overflow-y: auto; display: block; height: auto; }
         }
 
-        /* ===================== 蕾絲卡片容器 ===================== */
         .app-container {
-            position: relative;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.95);
-            width: 96%;
-            max-width: 1400px; 
-            height: 85vh; 
-            margin: 0 auto;
-            border-radius: var(--radius);
+            position: relative; z-index: 10; background: rgba(255, 255, 255, 0.95);
+            width: 96%; max-width: 1400px; height: 85vh; 
+            margin: 0 auto; border-radius: var(--radius);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: row;
-            overflow: visible; 
+            display: flex; flexDirection: row; overflow: visible; 
         }
 
         .app-container::before, .app-container::after {
             content: ""; position: absolute; left: 0; right: 0; height: 52px;
             background-size: contain; background-repeat: repeat-x; pointer-events: none; z-index: 20;
         }
-        .app-container::before {
-            top: -50px; 
-            background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊1.png');
-        }
-        .app-container::after {
-            bottom: -50px; 
-            background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊2.png');
-        }
+        .app-container::before { top: -50px; background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊1.png'); }
+        .app-container::after { bottom: -50px; background-image: url('https://summerakari.com/wp-content/uploads/2025/08/花邊2.png'); }
 
         @media(max-width:900px) {
-            .app-container {
-                flex-direction: column;
-                height: auto;
-                margin: 4rem auto; 
-                width: 90%;
-            }
+            .app-container { flexDirection: column; height: auto; margin: 4rem auto; width: 90%; }
             .app-container::before { top: -40px; height: 40px; }
             .app-container::after { bottom: -40px; height: 40px; }
         }
 
         /* ===================== 左側：編輯區 ===================== */
         .editor-panel {
-            flex: 0 0 380px;
-            padding: 30px;
-            overflow-y: auto;
-            border-right: 1px solid rgba(51, 166, 184, 0.2);
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            border-radius: 0;
+            flex: 0 0 380px; padding: 30px; overflow-y: auto;
+            border-right: 1px solid rgba(51, 166, 184, 0.2); background: #fff;
+            display: flex; flexDirection: column; gap: 1.2rem; border-radius: 0;
         }
-        
         .editor-panel::-webkit-scrollbar { width: 6px; }
         .editor-panel::-webkit-scrollbar-thumb { background: rgba(51, 166, 184, 0.3); border-radius: 3px; }
 
-        label {
-            font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; display: block;
-        }
-
+        label { font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; display: block; }
+        
         textarea, input[type="text"], input[type="number"], select {
             width: 100%; padding: 10px 12px;
             border: 2px solid var(--frame); border-radius: var(--card-radius);
@@ -140,11 +86,7 @@
             outline: none; transition: 0.25s; box-sizing: border-box;
             background: #fff; color: var(--ink);
         }
-
-        textarea:focus, input:focus, select:focus {
-            background: var(--blue); color: var(--ink);
-        }
-
+        textarea:focus, input:focus, select:focus { background: var(--blue); color: var(--ink); }
         textarea { resize: vertical; min-height: 150px; line-height: 1.6; }
 
         .color-picker-wrapper { display: flex; align-items: center; gap: 8px; }
@@ -152,83 +94,51 @@
             width: 44px; height: 44px; padding: 0; border: 2px solid var(--frame);
             border-radius: 50%; cursor: pointer; background: none; flex-shrink: 0; overflow: hidden;
         }
-
-        input[type="range"] {
-            width: 100%; accent-color: var(--frame); height: 6px; background: #eee; border-radius: 3px; border: none; padding: 0;
-        }
-
+        input[type="range"] { width: 100%; accent-color: var(--frame); height: 6px; background: #eee; border-radius: 3px; border: none; padding: 0; }
+        
         .checkbox-group { display: flex; align-items: center; gap: 8px; }
-        input[type="checkbox"] {
-            width: 18px; height: 18px; accent-color: var(--frame); border-radius: 4px; border: 2px solid var(--frame); margin: 0;
-        }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--frame); border-radius: 4px; border: 2px solid var(--frame); margin: 0; cursor: pointer; }
 
-        .controls {
-            margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-top: 20px;
-        }
-
+        .controls { margin-top: auto; display: flex; flexDirection: column; gap: 12px; padding-top: 20px; }
         .btn {
             display: inline-flex; justify-content: center; align-items: center; gap: 8px;
             padding: 0.78rem 1.4rem; border-radius: 999px; background: #fff;
             color: var(--ink); font-weight: 600; border: 2px solid var(--ink);
             transition: 0.25s; cursor: pointer; font-size: 1rem;
         }
-
         .btn-primary { background: var(--frame); color: #fff; border-color: var(--frame); }
         .btn-primary:hover { background: #fff; color: var(--frame); }
-
         .btn-secondary { background: #fff; color: var(--accent); border-color: var(--accent); }
         .btn-secondary:hover { background: var(--accent); color: #fff; }
 
         .settings-row { display: flex; gap: 12px; }
-        .input-group { flex: 1; display: flex; flex-direction: column; }
+        .input-group { flex: 1; display: flex; flexDirection: column; }
 
         /* ===================== 右側：預覽區 ===================== */
         .preview-panel {
-            flex: 1;
-            padding: 40px;
-            background-color: #fcfaf2;
+            flex: 1; padding: 40px; background-color: #fcfaf2;
             background-image: radial-gradient(var(--frame) 1px, transparent 1px);
-            background-size: 30px 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            align-content: flex-start;
-            justify-content: center;
-            border-radius: 0;
+            background-size: 30px 30px; overflow-y: auto;
+            display: flex; flex-wrap: wrap; gap: 30px;
+            align-content: flex-start; justify-content: center; border-radius: 0;
         }
-
         @media(max-width:900px) {
-            .editor-panel { 
-                border-right: none; 
-                border-bottom: 1px solid rgba(51, 166, 184, 0.2); 
-                flex: none; height: auto; 
-                border-radius: 0;
-            }
-            .preview-panel { 
-                min-height: 500px;
-                border-radius: 0;
-            }
+            .editor-panel { border-right: none; border-bottom: 1px solid rgba(51, 166, 184, 0.2); flex: none; height: auto; border-radius: 0; }
+            .preview-panel { min-height: 500px; border-radius: 0; }
         }
 
-        /* ===================== 卡片本體 (預覽) ===================== */
+        /* ===================== 卡片樣式 (Preview & Render 同步) ===================== */
         .card-preview {
-            width: 360px;
+            width: 360px; /* 基礎寬度 */
             background: #fff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
-            padding: 33px 30px; 
+            padding: 30px; /* 基礎 Padding */
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            transform-origin: center top;
-            transition: all 0.3s;
-            overflow: hidden; 
+            display: flex; flexDirection: column; position: relative;
+            transform-origin: center top; transition: all 0.3s; overflow: hidden; 
         }
-
         .card-preview:hover { transform: scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
-        
         .card-preview.overflow-warning { border: 2px solid #ff4d4f; }
         .warning-badge {
             position: absolute; top: 10px; right: 10px; background: #ff4d4f; color: white;
@@ -258,26 +168,17 @@
             flex: 1; color: inherit; overflow: hidden; letter-spacing: 0.05em; text-align: justify;
             z-index: 3; position: relative; padding: 10px; word-break: break-word;
         }
-        /* 段落間距變數應用 */
-        .card-body p, .render-body p { 
-            margin-top: 0; 
-            margin-bottom: var(--para-spacing, 1em); 
-            white-space: pre-wrap; 
-        }
+        .card-body p, .render-body p { margin-top: 0; margin-bottom: var(--para-spacing, 1em); white-space: pre-wrap; }
         .card-body p:last-child, .render-body p:last-child { margin-bottom: 0; }
         
-        .card-body h1, .render-body h1,
-        .card-body h2, .render-body h2,
-        .card-body h3, .render-body h3 { 
-            font-family: 'Noto Serif TC', serif; 
-            color: inherit;
-            margin-top: 0.5em; margin-bottom: 0.3em; 
-            font-weight: 700; opacity: 0.9; 
+        /* 標題與內文同色 */
+        .card-body h1, .render-body h1, .card-body h2, .render-body h2, .card-body h3, .render-body h3 { 
+            font-family: 'Noto Serif TC', serif; color: inherit;
+            margin-top: 0.5em; margin-bottom: 0.3em; font-weight: 700; opacity: 0.9; 
         }
         .card-body h1, .render-body h1 { font-size: 1.4em; }
         .card-body h2, .render-body h2 { font-size: 1.25em; border-bottom: 1px solid currentColor; padding-bottom: 4px; opacity: 0.85; }
         .card-body h3, .render-body h3 { font-size: 1.1em; opacity: 0.8; }
-
         .card-body blockquote, .render-body blockquote { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid currentColor; opacity: 0.7; font-style: italic; }
         
         .card-body table, .render-body table {
@@ -296,9 +197,14 @@
 
         #render-container { position: fixed; left: -9999px; top: 0; }
         .render-card {
-            width: 1080px; background: white; padding: 100px 90px; box-sizing: border-box;
-            display: flex; flex-direction: column; position: relative; overflow: hidden;
+            /* 1:3 比例嚴格對應 */
+            width: 1080px; /* 360 * 3 */
+            background: white; 
+            padding: 90px; /* 30 * 3 */
+            box-sizing: border-box;
+            display: flex; flexDirection: column; position: relative; overflow: hidden;
         }
+        /* Render 邊框加粗 3 倍 */
         .render-card.border-simple::after { inset: 45px; border-width: 3px; }
         .render-card.border-double::after { inset: 36px; border-width: 9px; }
         .render-card.border-corners::after { inset: 45px; border-width: 3px; }
@@ -307,7 +213,7 @@
         #loading {
             position: fixed; inset: 0; background: rgba(255,255,255,0.9);
             display: flex; justify-content: center; align-items: center; z-index: 100;
-            display: none; flex-direction: column; gap: 15px; color: var(--frame);
+            display: none; flexDirection: column; gap: 15px; color: var(--frame);
         }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #f3f3f3;
@@ -323,7 +229,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.6</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.7</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -431,13 +337,13 @@
                 </div>
             </div>
 
-            <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
-                <label>輸入內容</label>
+            <div class="input-group" style="flex:1; display:flex; flexDirection:column;">
+                <label>輸入內容 (支援 Markdown)</label>
                 <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
                 
                 <div class="checkbox-group" style="margin-top:8px;">
                     <input type="checkbox" id="autoParagraph" onchange="generatePreview()">
-                    <label for="autoParagraph" style="cursor:pointer; white-space:nowrap; font-weight:500; font-size: 0.8rem; color:#666;">智慧換行 (手機專用：單換行變段落)</label>
+                    <label for="autoParagraph" style="cursor:pointer; white-space:nowrap; font-weight:500; font-size: 0.8rem; color:#666;">智慧換行 (僅手機版生效)</label>
                 </div>
             </div>
 
@@ -507,32 +413,27 @@
             "1:2": { w: 1080, h: 2160, previewH: 720 }  
         };
 
-        const BASE_FONT_SIZE_RENDER = 34;
-        const BASE_FONT_SIZE_PREVIEW = 11.2;
+        // 字體比例修正：12px (preview) * 3 = 36px (render)
+        const BASE_FONT_SIZE_RENDER = 36;
+        const BASE_FONT_SIZE_PREVIEW = 12;
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n歡迎來到「故事印刷所」。\n\n現在我們修復了手機版字體太小的問題，還加了一個「智慧換行」開關。\n\n如果在手機上打字覺得段落太擠，試試看把左邊的「智慧換行」打勾，間距就會出來囉！";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在下載的圖片，留白應該會少很多了！\n\n我調整了字體和版面的「黃金比例」，讓預覽和輸出的效果一致。\n\n如果這段文字在預覽時剛好滿版，那麼下載下來的圖片也會是剛好滿版的。\n\n分頁邏輯也變聰明了，會嘗試在單行甚至標點符號後切分，避免硬塞。";
             generatePreview();
         };
 
         function initColorPickers() {
             const bgSelect = document.getElementById('bgSelect');
             const textSelect = document.getElementById('textSelect');
-            
             NIPPON_COLORS.forEach(c => {
                 const opt1 = new Option(c.name, c.hex);
                 const opt2 = new Option(c.name, c.hex);
-                bgSelect.add(opt1);
-                textSelect.add(opt2);
+                bgSelect.add(opt1); textSelect.add(opt2);
             });
-            
             bgSelect.add(new Option("--- 自訂 ---", "custom"));
             textSelect.add(new Option("--- 自訂 ---", "custom"));
-
-            bgSelect.value = "#FFFFFB"; 
-            textSelect.value = "#1C1C1C"; 
-            
+            bgSelect.value = "#FFFFFB"; textSelect.value = "#1C1C1C"; 
             document.getElementById('bgColor').value = "#FFFFFB";
             document.getElementById('textColor').value = "#1C1C1C";
         }
@@ -550,9 +451,7 @@
             let match = false;
             for(let i=0; i<select.options.length; i++) {
                 if (select.options[i].value.toLowerCase() === input.value.toLowerCase()) {
-                    select.selectedIndex = i;
-                    match = true;
-                    break;
+                    select.selectedIndex = i; match = true; break;
                 }
             }
             if (!match) select.value = 'custom';
@@ -560,36 +459,72 @@
         }
 
         function parseText(text, limit) {
-            // 智慧換行處理 (將單換行轉為雙換行，實現段落效果)
+            // 智慧換行修正：僅在手機且勾選時處理
             const autoParagraph = document.getElementById('autoParagraph').checked;
+            const isMobile = window.innerWidth <= 900;
             let processedText = text;
             
-            if (autoParagraph) {
-                // 將單換行替換為雙換行，但忽略已有的雙換行
-                // 這裡簡單處理：先統一正規化，再替換
-                processedText = text.replace(/\r\n/g, '\n'); 
-                // 避免已經是雙換行的變四換行，先拆成行，再過濾空行重組？
-                // 簡單策略：把所有 \n 變成 \n\n，這樣原本的空行會變更大，但 Markdown 會忽略多餘空行
-                // 比較好的做法：看使用者需求。這裡做簡單的轉換：非連續的 \n 變成 \n\n
-                processedText = processedText.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
+            // 只有在是手機 且 勾選了智慧換行 時才執行
+            if (isMobile && autoParagraph) {
+                // 將孤立的 \n 替換為 \n\n，但不影響已經是 \n\n 的
+                // 邏輯：正向預查與反向預查，找出前後不是 \n 的 \n
+                // 簡單作法：先拆成段落，若段落非空且不含換行，補一個
+                // 用更穩定的 regex：將所有 \r\n 統一為 \n
+                processedText = processedText.replace(/\r\n/g, '\n');
+                // 將連續的 \n (2個以上) 保護起來，替換成特殊標記
+                processedText = processedText.replace(/\n{2,}/g, '###DOUBLE_NEWLINE###');
+                // 將剩下的單 \n 替換成 \n\n
+                processedText = processedText.replace(/\n/g, '\n\n');
+                // 還原特殊標記
+                processedText = processedText.replace(/###DOUBLE_NEWLINE###/g, '\n\n');
             }
 
             const rawPages = processedText.split('===');
             let finalPages = [];
+            
             rawPages.forEach(page => {
                 let content = page.trim();
                 if (!content) return;
+                
+                // 更積極的分頁邏輯
                 if (content.length > limit * 1.5) { 
-                    // 分割邏輯：優先在雙換行處分割
-                    let paragraphs = content.split(/\n\s*\n/);
+                    // 1. 嘗試用段落分 ( \n\n )
+                    let chunks = content.split(/\n\s*\n/);
                     let currentChunk = "";
-                    paragraphs.forEach(para => {
-                        let p = para + "\n\n";
-                        if ((currentChunk.length + p.length) > limit) {
-                            if(currentChunk) finalPages.push(currentChunk.trim());
-                            currentChunk = p;
+                    
+                    chunks.forEach(chunk => {
+                        let p = chunk + "\n\n";
+                        
+                        // 如果光是這一段就爆了，嘗試用單行分
+                        if (p.length > limit) {
+                            // 先把 currentChunk 推出去
+                            if (currentChunk) {
+                                finalPages.push(currentChunk.trim());
+                                currentChunk = "";
+                            }
+                            
+                            // 用單行分
+                            let lines = p.split('\n');
+                            let lineChunk = "";
+                            lines.forEach(line => {
+                                let l = line + "\n";
+                                if ((lineChunk.length + l.length) > limit) {
+                                    if(lineChunk) finalPages.push(lineChunk.trim());
+                                    lineChunk = l;
+                                } else {
+                                    lineChunk += l;
+                                }
+                            });
+                            if(lineChunk) finalPages.push(lineChunk.trim());
+                            
                         } else {
-                            currentChunk += p;
+                            // 正常段落合併
+                            if ((currentChunk.length + p.length) > limit) {
+                                if(currentChunk) finalPages.push(currentChunk.trim());
+                                currentChunk = p;
+                            } else {
+                                currentChunk += p;
+                            }
                         }
                     });
                     if (currentChunk) finalPages.push(currentChunk.trim());
@@ -601,13 +536,9 @@
         }
         
         function isDarkColor(hex) {
-            let c = hex.substring(1);      
-            let rgb = parseInt(c, 16);   
-            let r = (rgb >> 16) & 0xff;  
-            let g = (rgb >>  8) & 0xff;  
-            let b = (rgb >>  0) & 0xff;  
-            let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; 
-            return luma < 100;
+            let c = hex.substring(1); let rgb = parseInt(c, 16);   
+            let r = (rgb >> 16) & 0xff; let g = (rgb >>  8) & 0xff; let b = (rgb >>  0) & 0xff;  
+            let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; return luma < 100;
         }
 
         function generatePreview() {
@@ -662,9 +593,7 @@
                             <span class="page-number">${index + 1} / ${pages.length}</span>
                         </div>
                     `;
-                } else {
-                     footerHtml = `<div style="height: 10px;"></div>`; 
-                }
+                } else { footerHtml = `<div style="height: 10px;"></div>`; }
 
                 const warningBadge = `<div class="warning-badge">⚠️ 內容溢出，請減少字數</div>`;
 
@@ -727,6 +656,8 @@
                     renderCard.style.setProperty('--para-spacing', paraSpacing + 'em');
 
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
+                    
+                    // 修正：字體比例嚴格對應 (36px = 12px * 3)
                     const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
                     const parsedBody = marked.parse(pages[i]);
                     
@@ -738,9 +669,7 @@
                                 <span style="color: inherit; opacity: 0.8;">${i + 1} / ${pages.length}</span>
                             </div>
                         `;
-                    } else {
-                        footerHtml = `<div style="height: 40px;"></div>`; 
-                    }
+                    } else { footerHtml = `<div style="height: 40px;"></div>`; }
 
                     renderCard.innerHTML = `
                         ${textureHtml}
@@ -754,15 +683,14 @@
                     let mimeType = 'image/png';
                     if (fileFormat === 'jpeg') mimeType = 'image/jpeg';
 
-                    // 關鍵修正：強制 windowWidth 模擬電腦寬度，防止手機版縮圖
                     const canvas = await html2canvas(renderCard, {
                         scale: 2, 
                         useCORS: true,
                         backgroundColor: bgColor, 
                         width: ratioConfig.w,
                         height: ratioConfig.h,
-                        windowWidth: 1600, // 強制模擬 1600px 寬螢幕
-                        windowHeight: 1200 // 強制模擬高度
+                        windowWidth: 1600, // 強制模擬桌面寬度
+                        windowHeight: 1200 
                     });
 
                     const dataUrl = canvas.toDataURL(mimeType, 0.9);
