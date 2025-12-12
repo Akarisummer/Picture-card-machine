@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.12</title>
+    <title>故事印刷所 v2.15</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -137,7 +137,8 @@
             background: #fff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
-            padding: 30px; /* 基礎 Padding */
+            /* 修正：預覽左右 padding 設為 30px */
+            padding: 30px;
             box-sizing: border-box;
             display: flex; flex-direction: column; position: relative;
             transform-origin: center top; transition: all 0.3s; overflow: hidden; 
@@ -201,7 +202,10 @@
 
         #render-container { position: fixed; left: -9999px; top: 0; }
         .render-card {
-            width: 1080px; background: white; padding: 90px; box-sizing: border-box;
+            width: 1080px; background: white; 
+            /* 修正：Render padding 設回 90px (30px * 3) */
+            padding: 90px; 
+            box-sizing: border-box;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
         /* Render 邊框加粗 3 倍 */
@@ -229,7 +233,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.12</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.15</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -385,7 +389,7 @@
             { name: "青磁 (Seiji) - 青瓷", hex: "#69B0AC" },
             { name: "瓶覗 (Kamenozoki) - 淺藍", hex: "#A2D7DD" },
             { name: "水色 (Mizu) - 清水", hex: "#BCE2E8" }, 
-            { name: "淺蔥 (Asagi) - 蔥藍", hex: "#33A3DC" }, 
+            { name: "淺蔥 (Asagi) -蔥藍", hex: "#33A3DC" }, 
             { name: "勿忘草 (Wasurenagusa) - 勿忘我", hex: "#7DB9DE" },
             { name: "琉璃 (Ruri) - 青金石", hex: "#005CAF" },
             { name: "藍 (Ai) - 深藍", hex: "#165E83" }, 
@@ -416,7 +420,7 @@
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在我們移除了字體大小調整，回歸最穩定的 1:3 比例。\n\n預覽看到的，就是妳下載後得到的。\n\n簡單一點，反而更精準。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n這次我們把預覽與輸出的比例校正為嚴格的 1:3。\n\n預覽 Padding: 30px (字體 12px)\n輸出 Padding: 90px (字體 36px)\n\n這樣一來，無論妳看到哪裡斷行，輸出就會是哪裡斷行，不再有誤差了。";
             generatePreview();
         };
 
