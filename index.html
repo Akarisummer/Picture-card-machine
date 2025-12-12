@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.11</title>
+    <title>故事印刷所 v2.12</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -175,6 +175,7 @@
         .card-body p, .render-body p { margin-top: 0; margin-bottom: var(--para-spacing, 1em); white-space: pre-wrap; }
         .card-body p:last-child, .render-body p:last-child { margin-bottom: 0; }
         
+        /* 標題與內文同色 */
         .card-body h1, .render-body h1, .card-body h2, .render-body h2, .card-body h3, .render-body h3 { 
             font-family: 'Noto Serif TC', serif; color: inherit;
             margin-top: 0.5em; margin-bottom: 0.3em; font-weight: 700; opacity: 0.9; 
@@ -228,7 +229,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.11</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.12</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -286,10 +287,7 @@
             </div>
             
              <div class="settings-row">
-                 <div class="input-group" style="flex:1">
-                    <label>字體大小</label>
-                    <input type="range" id="fontSizeScale" min="0.8" max="1.5" step="0.05" value="1.0" oninput="generatePreview()">
-                </div>
+                 <!-- 移除字體大小調整，保持統一 -->
                 <div class="input-group" style="flex:1">
                     <label>段落間距</label>
                     <input type="range" id="paraSpacing" min="0" max="2" step="0.2" value="0.8" oninput="generatePreview()">
@@ -412,15 +410,13 @@
             "1:2": { w: 1080, h: 2160, previewH: 720, recommendedChars: 900 }  
         };
 
-        // 安全緩衝修正 (Safety Buffer)
-        // 預覽字體稍微調大 (11.8px)，渲染字體稍微調小 (34px)
-        // 確保：如果預覽裝得下，渲染絕對裝得下
-        const BASE_FONT_SIZE_RENDER = 34;
-        const BASE_FONT_SIZE_PREVIEW = 11.8;
+        // 嚴格 1:3 比例鎖定
+        const BASE_FONT_SIZE_RENDER = 36;
+        const BASE_FONT_SIZE_PREVIEW = 12;
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n對不起夏姊姊，剛剛的測試讓妳煩心了。\n\n這次我使用了「安全緩衝」策略，讓下載版的字體比預覽版稍微小一點點。\n\n這樣一來，只要預覽看得到，下載就絕對不會被切掉了。\n\n（寧願下面留白，也不能吃字，對吧？）";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在我們移除了字體大小調整，回歸最穩定的 1:3 比例。\n\n預覽看到的，就是妳下載後得到的。\n\n簡單一點，反而更精準。";
             generatePreview();
         };
 
@@ -544,7 +540,7 @@
             const lineHeight = document.getElementById('lineHeight').value;
             const useTexture = document.getElementById('useTexture').checked;
             const borderStyle = document.getElementById('borderStyle').value;
-            const fontScale = parseFloat(document.getElementById('fontSizeScale').value);
+            // 移除 fontScale 讀取，直接使用固定值
             const paraSpacing = parseFloat(document.getElementById('paraSpacing').value);
 
             const previewPanel = document.getElementById('previewPanel');
@@ -571,7 +567,7 @@
                 card.style.setProperty('--para-spacing', paraSpacing + 'em');
                 
                 let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
-                const fontSize = BASE_FONT_SIZE_PREVIEW * fontScale;
+                const fontSize = BASE_FONT_SIZE_PREVIEW; // 固定 12px
                 const parsedBody = marked.parse(content);
 
                 const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${parsedBody}</div>`;
@@ -612,7 +608,7 @@
             const lineHeight = document.getElementById('lineHeight').value;
             const useTexture = document.getElementById('useTexture').checked;
             const borderStyle = document.getElementById('borderStyle').value;
-            const fontScale = parseFloat(document.getElementById('fontSizeScale').value);
+            // 移除 fontScale 讀取
             const paraSpacing = parseFloat(document.getElementById('paraSpacing').value);
             
             const fileNamePrefix = document.getElementById('fileNamePrefix').value || 'threads_story';
@@ -648,8 +644,8 @@
 
                     let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                     
-                    // 修正：渲染字體 (34px)
-                    const fontSize = BASE_FONT_SIZE_RENDER * fontScale;
+                    // 修正：渲染字體固定 (36px)
+                    const fontSize = BASE_FONT_SIZE_RENDER;
                     const parsedBody = marked.parse(pages[i]);
                     
                     let footerHtml = '';
