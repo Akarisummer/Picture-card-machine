@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.17</title>
+    <title>故事印刷所 v2.18</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -137,8 +137,8 @@
             background: #fff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
-            /* 修正：預覽左右 padding 設為 30px，對齊 Render 的 90px (1:3) */
-            padding: 30px 30px;
+            /* 修正：預覽 padding 改為 20px */
+            padding: 20px;
             box-sizing: border-box;
             display: flex; flex-direction: column; position: relative;
             transform-origin: center top; transition: all 0.3s; overflow: hidden; 
@@ -203,7 +203,7 @@
         #render-container { position: fixed; left: -9999px; top: 0; }
         .render-card {
             width: 1080px; background: white; 
-            /* 渲染 padding 保持 90px */
+            /* 渲染 padding 保持 90px (1:3 比例與之前的 30px 對應，現在預覽 20px 比較寬鬆) */
             padding: 90px; 
             box-sizing: border-box;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
@@ -233,7 +233,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.17</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.18</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -301,8 +301,8 @@
              <div class="settings-row">
                 <div class="input-group" style="flex:1">
                     <label>單頁字數</label>
-                    <!-- 修改預設字數為 900 -->
-                    <input type="number" id="charLimit" value="900" min="100" max="3000" step="50" onchange="generatePreview()">
+                    <!-- 修改預設字數為 450 -->
+                    <input type="number" id="charLimit" value="450" min="100" max="3000" step="50" onchange="generatePreview()">
                 </div>
                 <div class="input-group" style="flex:1.5">
                     <label>圖片尺寸</label>
@@ -410,10 +410,11 @@
             { name: "黑鶴羽 (Kurotsurubami) - 深褐黑", hex: "#0B1013" },
         ];
 
+        // 更新字數建議
         const RATIOS = {
-            "4:5": { w: 1080, h: 1350, previewH: 450, recommendedChars: 500 }, 
-            "9:16": { w: 1080, h: 1920, previewH: 640, recommendedChars: 750 }, 
-            "1:2": { w: 1080, h: 2160, previewH: 720, recommendedChars: 900 }  
+            "4:5": { w: 1080, h: 1350, previewH: 450, recommendedChars: 250 }, 
+            "9:16": { w: 1080, h: 1920, previewH: 640, recommendedChars: 300 }, 
+            "1:2": { w: 1080, h: 2160, previewH: 720, recommendedChars: 450 }  
         };
 
         // 嚴格 1:3 比例鎖定
@@ -422,7 +423,7 @@
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在預設就是「Long (1:2)」的尺寸了。\n\n而且「單頁字數」也自動設定成了 900 字，讓妳可以一次寫下更多心情。\n\n希望這個小小的改變，能讓妳使用起來更順手。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n這次我們把預覽與輸出的比例校正為嚴格的 1:3。\n\n預覽 Padding: 20px (字體 12px)\n輸出 Padding: 90px (字體 36px)\n\n這樣一來，無論妳看到哪裡斷行，輸出就會是哪裡斷行，不再有誤差了。";
             generatePreview();
         };
 
