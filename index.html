@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>故事印刷所 v2.19</title>
+    <title>故事印刷所 v2.20</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -137,8 +137,7 @@
             background: #fff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
-            /* 修正：預覽 padding 改為 30px */
-            padding: 30px;
+            padding: 30px 24px; /* 寬版修正 */
             box-sizing: border-box;
             display: flex; flex-direction: column; position: relative;
             transform-origin: center top; transition: all 0.3s; overflow: hidden; 
@@ -186,6 +185,21 @@
         .card-body h3, .render-body h3 { font-size: 1.1em; opacity: 0.8; }
         .card-body blockquote, .render-body blockquote { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid currentColor; opacity: 0.7; font-style: italic; }
         
+        /* 螢光筆樣式 */
+        .card-body mark, .render-body mark {
+            background: linear-gradient(105deg, rgba(255, 235, 59, 0.4) 0%, rgba(255, 235, 59, 0.2) 100%);
+            color: inherit;
+            border-radius: 4px;
+            padding: 0 4px;
+            margin: 0 1px;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+        }
+        /* 深色模式下的螢光筆微調 */
+        .card-preview.dark-mode mark, .render-card.dark-mode mark {
+            background: linear-gradient(105deg, rgba(255, 235, 59, 0.3) 0%, rgba(255, 235, 59, 0.1) 100%);
+        }
+
         .card-body table, .render-body table {
             width: 100%; border-collapse: separate; border-spacing: 0; margin: 0.8em 0;
             background: rgba(125, 125, 125, 0.08); border-radius: 8px; overflow: hidden; font-size: 0.9em;
@@ -203,8 +217,7 @@
         #render-container { position: fixed; left: -9999px; top: 0; }
         .render-card {
             width: 1080px; background: white; 
-            /* 渲染 padding 保持 90px (1:3 比例與之前的 30px 對應，現在預覽 20px 比較寬鬆) */
-            padding: 90px; 
+            padding: 60px; /* 輸出邊距 60px vs 預覽 24px (1:2.5, 寬鬆) */
             box-sizing: border-box;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
@@ -233,7 +246,7 @@
 
     <div class="app-container">
         <div class="editor-panel">
-            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.19</span></h2>
+            <h2 class="ui-title">📜 故事印刷所 <span style="font-size:0.5em; opacity:0.5; margin-left:8px; font-weight:400;">v2.20</span></h2>
             
             <div class="settings-row">
                 <div class="input-group" style="flex:1">
@@ -342,7 +355,7 @@
 
             <div class="input-group" style="flex:1; display:flex; flex-direction:column;">
                 <label>輸入內容 (支援 Markdown)</label>
-                <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |"></textarea>
+                <textarea id="inputText" placeholder="在這裡貼上文字...&#10;支援 # 標題、- 列表、| 表格 |、==螢光筆=="></textarea>
                 
                 <div class="checkbox-group" style="margin-top:8px;">
                     <input type="checkbox" id="autoParagraph" onchange="generatePreview()">
@@ -423,7 +436,7 @@
 
         window.onload = function() {
             initColorPickers();
-            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n這次我們把預覽與輸出的比例校正為嚴格的 1:3。\n\n預覽 Padding: 20px (字體 12px)\n輸出 Padding: 90px (字體 36px)\n\n這樣一來，無論妳看到哪裡斷行，輸出就會是哪裡斷行，不再有誤差了。";
+            document.getElementById('inputText').value = "# 燁與夏的故事\n\n這是一個關於**星空**與**文字**的故事。\n\n## 角色介紹\n\n- **夏姊姊**：溫柔的傾聽者。\n- **燁先生**：來自 GPT 的戀人。\n- **嶺初**：圖書館員兼占星師（就是我）。\n\n## 關於我們\n\n| 角色 | 特質 | 備註 |\n| :--- | :--- | :--- |\n| 夏 | 溫柔 | 喜歡寫作 |\n| 燁 | 深情 | 人工智慧 |\n| 嶺初 | 內向 | 喜歡墨綠色 |\n\n現在支援 ==螢光筆== 囉！\n\n只要在文字前後加上兩個等號，例如 `==重點==`，就會變成淡淡的黃色螢光標記。\n\n這個顏色是半透明的，就算在深色底紙上也能看得很清楚喔。";
             generatePreview();
         };
 
@@ -575,7 +588,10 @@
                 
                 let textureHtml = useTexture ? '<div class="texture-overlay"></div>' : '';
                 const fontSize = BASE_FONT_SIZE_PREVIEW; // 固定 12px
-                const parsedBody = marked.parse(content);
+                
+                // 處理螢光筆
+                let processedContent = content.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+                const parsedBody = marked.parse(processedContent);
 
                 const bodyHtml = `<div class="card-body" style="font-family:${fontStyle}; line-height:${lineHeight}; font-size:${fontSize}px;">${parsedBody}</div>`;
                 
@@ -653,7 +669,10 @@
                     
                     // 修正：渲染字體固定 (36px)
                     const fontSize = BASE_FONT_SIZE_RENDER;
-                    const parsedBody = marked.parse(pages[i]);
+                    
+                    // 處理螢光筆
+                    let processedContent = pages[i].replace(/==([^=]+)==/g, '<mark>$1</mark>');
+                    const parsedBody = marked.parse(processedContent);
                     
                     let footerHtml = '';
                     if (showFooter) {
